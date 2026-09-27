@@ -87,7 +87,7 @@ export default function BodyMapScreen() {
       )}
       <div aria-live="polite" className="min-h-5 text-sm font-bold text-muted">{toast}</div>
       {currentEntries.length > 0 && (
-        <div className="sticky bottom-28 z-20 w-full max-w-sm">
+        <div className="z-20 w-full max-w-sm [@media(min-height:640px)]:sticky [@media(min-height:640px)]:bottom-28">
           <button type="button" onClick={finish} className="btn btn-primary btn-big w-full">
             I’m done for now ({currentEntries.length})
           </button>

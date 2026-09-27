@@ -4,10 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#6d8a96" />
+    <meta name="theme-color" content="#fff9ee" />
     <meta name="description" content="A private place to notice where feelings show up in your body." />
     <link rel="apple-touch-icon" href="/icon-192.png" />
     <title>Body Map</title>
+    <script>
+      // Paint the last-used world immediately; the app confirms it once settings load.
+      try { var w = localStorage.getItem('bm-world'); if (w) document.documentElement.dataset.world = w; } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

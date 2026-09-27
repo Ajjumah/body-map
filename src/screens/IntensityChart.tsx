@@ -82,7 +82,7 @@ export default function IntensityChart({ entries }: { entries: Entry[] }) {
         {h && hover !== null && (
           <div
             role="status"
-            className="pointer-events-none absolute top-0 rounded-lg border border-line bg-surface px-2 py-1 text-xs text-ink shadow"
+            className="card pointer-events-none absolute top-0 rounded-xl px-2 py-1 text-xs"
             style={{ left: `${((padL + step * hover + step / 2) / W) * 100}%`, transform: `translateX(${hover > points.length / 2 ? '-100%' : '0'})` }}
           >
             <strong>{h.label}</strong>: avg {h.avg.toFixed(1)} · {h.n} {h.n === 1 ? 'entry' : 'entries'}

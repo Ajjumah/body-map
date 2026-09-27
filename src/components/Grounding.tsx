@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Icon, { sparklePath } from './Icon';
 import type { Emotion, Entry } from '../types';
 
 export type GroundingKind = 'breathing' | 'senses' | 'rest' | 'savour';
@@ -18,8 +19,8 @@ export function pickGrounding(entries: Entry[], emotionById: Map<string, Emotion
 
 const PHASES = [
   { label: 'Breathe in', secs: 4 },
-  { label: 'Hold', secs: 7 },
-  { label: 'Breathe out', secs: 8 },
+  { label: 'Hold it gently', secs: 7 },
+  { label: 'Let it float out', secs: 8 },
 ];
 
 const CYCLE = PHASES.reduce((a, p) => a + p.secs, 0);
@@ -53,15 +54,18 @@ function Breathing() {
   const dur = !running ? 0 : PHASES[phase].secs;
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className="flex size-40 items-center justify-center">
-        <div
-          aria-hidden="true"
-          className="size-36 rounded-full bg-accent-soft ring-4 ring-accent/30"
-          style={{ transform: `scale(${scale})`, transition: `transform ${dur}s ease-in-out` }}
-        />
+      <div className="flex h-48 items-end justify-center">
+        <svg width="130" height="180" viewBox="0 0 130 180" aria-hidden="true" style={{ transform: `scale(${scale})`, transformOrigin: '50% 70%', transition: `transform ${dur}s ease-in-out` }}>
+          <path d="M65 124 Q60 146 70 156 Q78 164 66 176" fill="none" stroke="var(--outline)" strokeWidth="2.5" strokeLinecap="round" />
+          <ellipse cx="65" cy="66" rx="48" ry="56" fill="var(--accent)" stroke="var(--outline)" strokeWidth="3" />
+          <path d="M58 120 L72 120 L65 130 Z" fill="var(--accent)" stroke="var(--outline)" strokeWidth="3" strokeLinejoin="round" />
+          <ellipse cx="46" cy="44" rx="9" ry="15" fill="#fff" fillOpacity="0.55" transform="rotate(-20 46 44)" />
+          <path d={sparklePath(112, 22, 8)} fill="var(--sparkle)" stroke="var(--outline)" strokeWidth="1.5" />
+          <path d={sparklePath(16, 104, 6)} fill="var(--sparkle)" stroke="var(--outline)" strokeWidth="1.5" />
+        </svg>
       </div>
-      <p className="h-6 text-lg text-ink">
-        <span aria-live="polite">{running ? PHASES[phase].label : finished ? 'Nicely done.' : 'Four slow rounds, just over a minute.'}</span>
+      <p className="min-h-8 text-center font-display text-2xl text-ink">
+        <span aria-live="polite">{running ? PHASES[phase].label : finished ? 'You did it. Nicely done.' : 'Watch the balloon grow as you breathe in.'}</span>
         {running && <span aria-hidden="true"> · {left}</span>}
       </p>
       {running && <p className="-mt-2 text-xs text-muted">Round {cycles + 1} of {ROUNDS}</p>}
@@ -71,9 +75,9 @@ function Breathing() {
           if (!running && finished) setT(0);
           setRunning((r) => !r);
         }}
-        className="min-h-11 rounded-full bg-accent px-5 font-semibold text-accent-ink"
+        className="btn btn-primary"
       >
-        {running ? 'Pause' : t > 0 && !finished ? 'Resume' : 'Start breathing'}
+        {running ? 'Pause' : t > 0 && !finished ? 'Keep going' : 'Let’s breathe'}
       </button>
     </div>
   );
@@ -93,35 +97,35 @@ function Senses() {
   return (
     <div className="flex flex-col items-center gap-3 text-center">
       <p aria-live="polite" className="min-h-16 text-lg text-ink">
-        {done ? 'You’re here, right now. That’s enough.' : (
+        {done ? 'Treasure found! You’re here, right now. That’s enough.' : (
           <>
-            Notice <span className="text-3xl font-semibold text-accent">{SENSES[step][0]}</span> {SENSES[step][1]}.
+            Find <span className="mx-1 inline-flex size-11 items-center justify-center rounded-full border-3 border-outline bg-accent-2 font-display text-3xl">{SENSES[step][0]}</span> {SENSES[step][1]}.
           </>
         )}
       </p>
-      <button type="button" onClick={() => setStep((s) => (done ? 0 : s + 1))} className="min-h-11 rounded-full bg-accent px-5 font-semibold text-accent-ink">
-        {done ? 'Start again' : step === 0 ? 'I’ve noticed them' : 'Next'}
+      <button type="button" onClick={() => setStep((s) => (done ? 0 : s + 1))} className="btn btn-primary">
+        {done ? 'Play again' : step === 0 ? 'Found them!' : 'Next treasure'}
       </button>
     </div>
   );
 }
 
 const COPY: Record<GroundingKind, { title: string; intro: string }> = {
-  breathing: { title: '4-7-8 breathing', intro: 'A slow breath can tell your body it’s safe to soften a little.' },
-  senses: { title: '5-4-3-2-1 senses', intro: 'Gently bring your attention to what’s around you, one sense at a time.' },
-  rest: { title: 'A small rest', intro: 'Tiredness is information too. If you can, sip some water, drop your shoulders, and let your eyes rest for a minute.' },
-  savour: { title: 'Stay with it', intro: 'Something here feels okay. If you like, take three slow breaths and notice where that ease sits in your body.' },
+  breathing: { title: 'Balloon breathing', intro: 'In for 4, hold for 7, float out for 8. A slow breath tells your body it’s safe to soften a little.' },
+  senses: { title: '5-4-3-2-1 treasure hunt', intro: 'Look around you for little treasures, one sense at a time.' },
+  rest: { title: 'A cosy little rest', intro: 'Tired is okay. If you can, sip some water, wiggle your shoulders down, and let your eyes rest for a minute.' },
+  savour: { title: 'Keep the good feeling', intro: 'Something here feels okay. If you like, take three slow breaths and notice where that cosy feeling lives in your body.' },
 };
 
 export default function Grounding({ kind, onDismiss }: { kind: GroundingKind; onDismiss: () => void }) {
   return (
-    <section aria-labelledby="grounding-title" className="relative rounded-3xl bg-accent-soft/60 p-5">
-      <button type="button" onClick={onDismiss} aria-label="Dismiss suggestion" className="absolute top-2 right-2 size-11 rounded-full text-xl text-muted hover:bg-surface/60">
-        ×
+    <section aria-labelledby="grounding-title" className="card relative bg-accent-soft p-5">
+      <button type="button" onClick={onDismiss} aria-label="Dismiss suggestion" className="btn btn-icon absolute top-3 right-3">
+        <Icon name="close" size={16} stroke={2.8} />
       </button>
-      <p className="text-xs font-semibold tracking-wide text-muted uppercase">If it helps</p>
-      <h3 id="grounding-title" className="mb-1 text-lg font-semibold text-ink">{COPY[kind].title}</h3>
-      <p className="mb-4 pr-6 text-ink">{COPY[kind].intro}</p>
+      <p className="eyebrow">A little game, if it helps</p>
+      <h3 id="grounding-title" className="mb-1 pr-12 text-2xl text-ink">{COPY[kind].title}</h3>
+      <p className="mb-2 pr-6 text-ink">{COPY[kind].intro}</p>
       {kind === 'breathing' && <Breathing />}
       {kind === 'senses' && <Senses />}
     </section>

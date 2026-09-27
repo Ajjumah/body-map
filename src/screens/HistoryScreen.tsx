@@ -19,12 +19,12 @@ export default function HistoryScreen({ route }: { route: string[] }) {
   return (
     <section aria-labelledby="history-title" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="history-title" className="text-xl font-semibold text-ink">History</h2>
+        <h2 id="history-title" className="text-3xl text-ink">Memories</h2>
         <Segmented<Tab>
           value={tab}
           onChange={(t) => (location.hash = t === 'heatmap' ? '#/history/heatmap' : '#/history')}
           label="History view"
-          options={[['timeline', 'Timeline'], ['heatmap', 'Heatmap']]}
+          options={[['timeline', 'Timeline'], ['heatmap', 'Body heatmap']]}
         />
       </div>
       <Filters value={filters} onChange={setFilters} />

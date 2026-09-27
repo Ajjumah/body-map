@@ -11,7 +11,7 @@ export default function PinSettings() {
   const { settings } = useStore();
   const [mode, setMode] = useState<Mode | null>(null);
   const on = !!settings.pinHash;
-  const btn = 'min-h-11 rounded-full border border-line px-4 text-ink hover:border-accent';
+  const btn = 'btn';
   return (
     <Card title="App lock" id="set-pin">
       <p className="mb-3 text-sm text-muted">
@@ -25,7 +25,7 @@ export default function PinSettings() {
             <button type="button" className={btn} onClick={() => setMode('remove')}>Turn off</button>
           </>
         ) : (
-          <button type="button" className="min-h-11 rounded-full bg-accent px-4 font-semibold text-accent-ink" onClick={() => setMode('set')}>Set a PIN</button>
+          <button type="button" className="btn btn-primary" onClick={() => setMode('set')}>Set a PIN</button>
         )}
       </div>
       {mode && <PinFlow mode={mode} onClose={() => setMode(null)} />}

@@ -32,11 +32,11 @@ export default function Timeline({ sessions, entries }: { sessions: Session[]; e
               const maxI = Math.max(...es.map((e) => e.intensity));
               return (
                 <li key={s.id}>
-                  <a href={`#/history/session/${s.id}`} className="flex min-h-16 items-center justify-between gap-3 rounded-2xl border border-line bg-surface p-3 hover:border-accent">
+                  <a href={`#/history/session/${s.id}`} className="flex min-h-16 items-center justify-between gap-3 card block p-3 transition-transform hover:-translate-y-0.5">
                     <div className="min-w-0">
-                      <p className="font-semibold text-ink">
+                      <p className="font-display text-xl text-ink">
                         {fmtTime(s.startedAt)}
-                        {!s.finishedAt && <span className="ml-2 rounded-full bg-accent-soft px-2 py-0.5 text-xs font-normal">in progress</span>}
+                        {!s.finishedAt && <span className="ml-2 rounded-full border-2 border-outline bg-accent-2 px-2 py-0.5 font-sans text-xs">in progress</span>}
                       </p>
                       <p className="text-sm text-muted">
                         {es.length} {es.length === 1 ? 'entry' : 'entries'} · strongest {maxI}/10
@@ -46,7 +46,7 @@ export default function Timeline({ sessions, entries }: { sessions: Session[]; e
                     </div>
                     <div className="flex shrink-0 -space-x-1" aria-hidden="true">
                       {emoIds.slice(0, 4).map((id) => (
-                        <span key={id} className="flex size-8 items-center justify-center rounded-full border-2 bg-surface" style={{ borderColor: emotionById.get(id)?.color }}>
+                        <span key={id} className="flex size-8 items-center justify-center rounded-full border-2 border-outline" style={{ background: emotionById.get(id)?.color }}>
                           <EmotionIcon emotion={emotionById.get(id)} size={18} />
                         </span>
                       ))}

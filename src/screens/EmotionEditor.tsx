@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import EmotionIcon from '../components/EmotionIcon';
+import Icon from '../components/Icon';
 import Sheet from '../components/Sheet';
 import { EMOTION_GROUPS } from '../data/emotions';
 import { uid } from '../lib/id';
@@ -12,7 +13,7 @@ function lastGrapheme(v: string) {
   return segs.length ? segs[segs.length - 1].segment : '';
 }
 
-const SWATCHES = ['#d4a24c', '#d98f63', '#c4705f', '#c68e9c', '#9c88b6', '#7093b8', '#6f9cc2', '#7db3a5', '#84b36c', '#a2c07e', '#aea797', '#80838b'];
+const SWATCHES = ['#ffc93c', '#ffaa5c', '#ff8577', '#f79ac0', '#c99af0', '#b28cf0', '#6e9cff', '#5ec2f2', '#7fddbe', '#8fd86a', '#d6cdb8', '#9a97af'];
 
 export default function EmotionEditor({ emotion, onClose }: { emotion?: Emotion; onClose: () => void }) {
   const { emotions, saveEmotion, addImage, removeImage, imageUrl } = useStore();
@@ -77,31 +78,31 @@ export default function EmotionEditor({ emotion, onClose }: { emotion?: Emotion;
   };
 
   const preview: Emotion = { id: 'preview', label, group: finalGroup, emoji: kind === 'emoji' ? emoji : undefined, imageId: kind === 'image' ? imageId : undefined, color, isDefault: false, archived: false, order: 0 };
-  const input = 'mt-1 min-h-11 w-full rounded-xl border border-line bg-bg px-3 text-ink';
+  const input = 'field mt-1';
 
   return (
     <Sheet
       title={emotion ? `Edit “${emotion.label}”` : 'New feeling'}
       onClose={cancel}
       footer={
-        <button type="button" onClick={save} disabled={!valid || busy} className="min-h-12 w-full rounded-full bg-accent font-semibold text-accent-ink disabled:opacity-40">
+        <button type="button" onClick={save} disabled={!valid || busy} className="btn btn-primary btn-big w-full">
           Save feeling
         </button>
       }
     >
       <div className="mb-4 flex items-center gap-3">
-        <span className="flex size-16 items-center justify-center rounded-2xl border-2" style={{ borderColor: color, background: `${color}33` }}>
+        <span className="flex size-16 items-center justify-center rounded-2xl border-3 border-outline" style={{ background: color }}>
           {(kind === 'emoji' && emoji) || (kind === 'image' && imageId && imageUrl(imageId)) ? <EmotionIcon emotion={preview} size={40} /> : <span className="text-muted">?</span>}
         </span>
-        <span className="text-ink">{label || 'Preview'}</span>
+        <span className="font-display text-2xl text-ink">{label || 'Preview'}</span>
       </div>
 
-      <label className="mb-3 block text-sm font-semibold text-ink">
+      <label className="mb-3 block font-bold text-ink">
         Name
         <input value={label} onChange={(e) => setLabel(e.target.value)} className={input} maxLength={40} />
       </label>
 
-      <label className="mb-3 block text-sm font-semibold text-ink">
+      <label className="mb-3 block font-bold text-ink">
         Group
         <select value={group} onChange={(e) => setGroup(e.target.value)} className={input}>
           {groups.map((g) => <option key={g} value={g}>{g}</option>)}
@@ -109,17 +110,17 @@ export default function EmotionEditor({ emotion, onClose }: { emotion?: Emotion;
         </select>
       </label>
       {group === '__new' && (
-        <label className="mb-3 block text-sm font-semibold text-ink">
+        <label className="mb-3 block font-bold text-ink">
           New group name
           <input value={newGroup} onChange={(e) => setNewGroup(e.target.value)} className={input} maxLength={30} />
         </label>
       )}
 
       <fieldset className="mb-3">
-        <legend className="mb-1 text-sm font-semibold text-ink">Symbol</legend>
-        <div role="radiogroup" aria-label="Symbol type" className="mb-2 inline-flex rounded-full bg-surface-2 p-1">
+        <legend className="mb-1 font-bold text-ink">Symbol</legend>
+        <div role="radiogroup" aria-label="Symbol type" className="card mb-2 inline-flex gap-0.5 rounded-full p-1">
           {(['emoji', 'image'] as const).map((k) => (
-            <button key={k} type="button" role="radio" aria-checked={kind === k} onClick={() => setKind(k)} className={`min-h-11 rounded-full px-4 text-sm ${kind === k ? 'bg-surface font-semibold text-ink shadow-sm' : 'text-muted'}`}>
+            <button key={k} type="button" role="radio" aria-checked={kind === k} onClick={() => setKind(k)} className={`min-h-11 rounded-full border-3 px-4 font-bold text-ink ${kind === k ? 'border-outline bg-accent-2' : 'border-transparent'}`}>
               {k === 'emoji' ? 'Emoji' : 'Picture'}
             </button>
           ))}
@@ -132,8 +133,8 @@ export default function EmotionEditor({ emotion, onClose }: { emotion?: Emotion;
           </label>
         ) : (
           <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => cam.current?.click()} className="min-h-11 rounded-full border border-line px-4 text-ink">📷 Take a photo</button>
-            <button type="button" onClick={() => gal.current?.click()} className="min-h-11 rounded-full border border-line px-4 text-ink">🖼️ Choose a picture</button>
+            <button type="button" onClick={() => cam.current?.click()} className="btn"><Icon name="camera" size={18} /> Take a photo</button>
+            <button type="button" onClick={() => gal.current?.click()} className="btn"><Icon name="image" size={18} /> Choose a picture</button>
             <input ref={cam} type="file" accept="image/*" capture="environment" className="sr-only" tabIndex={-1} aria-hidden="true" onChange={(e) => onFile(e.target.files?.[0])} />
             <input ref={gal} type="file" accept="image/*" className="sr-only" tabIndex={-1} aria-label="Choose a picture file" data-testid="emotion-image-input" onChange={(e) => onFile(e.target.files?.[0])} />
             {busy && <p className="w-full text-sm text-muted">Resizing…</p>}
@@ -144,10 +145,10 @@ export default function EmotionEditor({ emotion, onClose }: { emotion?: Emotion;
       </fieldset>
 
       <fieldset>
-        <legend className="mb-1 text-sm font-semibold text-ink">Colour</legend>
+        <legend className="mb-1 font-bold text-ink">Colour</legend>
         <div className="flex flex-wrap items-center gap-2">
           {SWATCHES.map((c) => (
-            <button key={c} type="button" onClick={() => setColor(c)} aria-label={`Colour ${c}`} aria-pressed={color === c} className={`size-11 rounded-full border-4 ${color === c ? 'border-ink' : 'border-surface'}`} style={{ background: c }} />
+            <button key={c} type="button" onClick={() => setColor(c)} aria-label={`Colour ${c}`} aria-pressed={color === c} className={`size-11 rounded-full border-3 ${color === c ? 'border-outline shadow-[0_3px_0_var(--shadow)]' : 'border-transparent'}`} style={{ background: c }} />
           ))}
           <label className="flex min-h-11 items-center gap-2 text-sm text-muted">
             Custom

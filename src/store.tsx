@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as DB from './db';
 import { DEFAULT_SETTINGS, type Settings } from './db';
-import { DEFAULT_EMOTIONS } from './data/emotions';
+import { DEFAULT_EMOTIONS, LEGACY_DEFAULT_COLORS } from './data/emotions';
 import { parseBackup, toBackup, type BackupFile } from './lib/backup';
 import { uid } from './lib/id';
 import type { Emotion, Entry, ImageRecord, Session } from './types';
@@ -59,6 +59,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     if (em.length === 0) {
       em = DEFAULT_EMOTIONS;
       await DB.putEmotions(em);
+    } else {
+      // Upgrade default emotions still wearing their original muted colour; user-picked colours are left alone.
+      const upgraded = em.flatMap((e) => {
+        const next = DEFAULT_EMOTIONS.find((d) => d.id === e.id);
+        return next && e.isDefault && LEGACY_DEFAULT_COLORS[e.id] === e.color ? [{ ...e, color: next.color }] : [];
+      });
+      if (upgraded.length) {
+        await DB.putEmotions(upgraded);
+        em = em.map((e) => upgraded.find((u) => u.id === e.id) ?? e);
+      }
     }
     setEmotions(em.sort((a, b) => a.order - b.order));
     setSessions(snap.sessions);

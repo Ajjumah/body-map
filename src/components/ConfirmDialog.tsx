@@ -24,21 +24,21 @@ export default function ConfirmDialog({ title, children, confirmLabel, typeToCon
   const ok = !typeToConfirm || typed.trim().toUpperCase() === typeToConfirm.toUpperCase();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onCancel} aria-hidden="true" />
-      <div role="alertdialog" aria-modal="true" aria-labelledby="cd-title" aria-describedby="cd-body" className="relative w-full max-w-sm rounded-3xl bg-surface p-5 shadow-xl">
-        <h2 id="cd-title" className="mb-2 text-lg font-semibold text-ink">{title}</h2>
+      <div className="absolute inset-0 bg-[#150f33]/45" onClick={onCancel} aria-hidden="true" />
+      <div role="alertdialog" aria-modal="true" aria-labelledby="cd-title" aria-describedby="cd-body" className="card sheet-in relative w-full max-w-sm p-5">
+        <h2 id="cd-title" className="mb-2 text-2xl text-ink">{title}</h2>
         <div id="cd-body" className="mb-4 text-ink">{children}</div>
         {typeToConfirm && (
           <label className="mb-4 block text-sm text-muted">
             Type <strong className="text-ink">{typeToConfirm}</strong> to confirm
-            <input value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" className="mt-1 min-h-11 w-full rounded-xl border border-line bg-bg px-3 text-ink" />
+            <input value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" className="field mt-1" />
           </label>
         )}
         <div className="flex justify-end gap-2">
-          <button ref={cancelRef} type="button" onClick={onCancel} className="min-h-11 rounded-full px-4 text-ink hover:bg-surface-2">
+          <button ref={cancelRef} type="button" onClick={onCancel} className="btn">
             Cancel
           </button>
-          <button type="button" disabled={!ok} onClick={onConfirm} className="min-h-11 rounded-full bg-warn px-4 font-semibold text-white disabled:opacity-40 dark:text-black">
+          <button type="button" disabled={!ok} onClick={onConfirm} className="btn btn-danger">
             {confirmLabel}
           </button>
         </div>

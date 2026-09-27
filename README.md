@@ -30,6 +30,17 @@ BASE_PATH=/body-map/ npm run build && BASE_PATH=/body-map/ npm run preview   # h
 - `src/screens/`: map, history (timeline, heatmap, insights), settings, help
 - `src/lib/`: backup/CSV, image resize, PIN hashing (PBKDF2), insights maths
 
+## Worlds (themes)
+
+Three playful worlds, switchable in Settings → "Choose your world":
+
+- **Sticker Book** (default): dotted paper, crayon colours, with Sunny the sun
+- **Cozy Island**: sky, clouds and hills, with Sprout
+- **Starlight Pocket**: a dark night sky, with Twinkle the star
+- **Match my device**: Sticker Book in light mode, Starlight Pocket in dark mode
+
+Tokens live in `src/index.css` under `[data-world="…"]`. `--ink` and `--muted` switch automatically between page text and text on a surface, so `.card`, `.btn`, `.chip`, `.sticker` and `.field` stay readable in every world. Fonts (Nunito, Gaegu, Fredoka, Baloo 2) are bundled through `@fontsource` and precached, so nothing is fetched from Google. Older `light`/`dark`/`system` settings migrate to `sticker`/`starlight`/`sticker`.
+
 ## Privacy notes
 
 - No backend and no network calls for user data. Export/CSV downloads use local object URLs.

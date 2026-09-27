@@ -114,7 +114,7 @@ describe('backup round trip (IndexedDB)', () => {
     await clearAll();
     expect((await loadAll()).entries).toHaveLength(0);
 
-    await replaceAll(parseBackup(json, { theme: 'system', pinHash: 'h', pinSalt: 's' }));
+    await replaceAll(parseBackup(json, { theme: 'sticker', pinHash: 'h', pinSalt: 's' }));
     const after = await loadAll();
 
     const strip = (s: typeof before) => ({ ...s, images: undefined });
@@ -131,7 +131,31 @@ describe('backup round trip (IndexedDB)', () => {
   });
 
   it('rejects files that are not backups', () => {
-    expect(() => parseBackup('nope', { theme: 'system' })).toThrow(/valid JSON/);
-    expect(() => parseBackup('{"a":1}', { theme: 'system' })).toThrow(/Body Map backup/);
+    expect(() => parseBackup('nope', { theme: 'sticker' })).toThrow(/valid JSON/);
+    expect(() => parseBackup('{"a":1}', { theme: 'sticker' })).toThrow(/Body Map backup/);
+  });
+});
+
+describe('worlds', () => {
+  it('maps old theme settings onto worlds, defaulting to Sticker Book', async () => {
+    const { normalizeTheme, resolveWorld } = await import('../lib/world');
+    expect(normalizeTheme(undefined)).toBe('sticker');
+    expect(normalizeTheme('system')).toBe('sticker');
+    expect(normalizeTheme('light')).toBe('sticker');
+    expect(normalizeTheme('dark')).toBe('starlight');
+    expect(normalizeTheme('island')).toBe('island');
+    expect(resolveWorld('auto', true)).toBe('starlight');
+    expect(resolveWorld('auto', false)).toBe('sticker');
+  });
+
+  it('upgrades untouched default emotion colours but keeps custom ones', async () => {
+    const { LEGACY_DEFAULT_COLORS } = await import('../data/emotions');
+    expect(Object.keys(LEGACY_DEFAULT_COLORS)).toHaveLength(26);
+    for (const e of DEFAULT_EMOTIONS) expect(LEGACY_DEFAULT_COLORS[e.id]).toBeDefined();
+  });
+
+  it('normalises a legacy theme in an imported backup', () => {
+    const b = JSON.stringify({ format: 'body-map-backup', version: 1, emotions: [], sessions: [], entries: [], images: [], settings: { theme: 'dark' } });
+    expect(parseBackup(b, { theme: 'sticker' }).settings.theme).toBe('starlight');
   });
 });

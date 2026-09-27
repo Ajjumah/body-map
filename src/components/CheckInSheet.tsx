@@ -4,7 +4,11 @@ import { regionLabel } from '../data/regions';
 import { useStore, type EntryDraft } from '../store';
 import type { RegionId } from '../types';
 import EmotionIcon from './EmotionIcon';
+import Icon from './Icon';
+import StarScale, { ScaleValue } from './StarScale';
 import Sheet from './Sheet';
+
+const TILTS = [-3, 2, -1.5, 3, -2, 1.5, -2.5, 2.5];
 
 type Props = { regionId: RegionId; onSave: (d: EntryDraft) => void; onClose: () => void };
 
@@ -29,24 +33,20 @@ export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
       title={regionLabel(regionId)}
       onClose={onClose}
       footer={
-        <button
-          type="button"
-          onClick={save}
-          disabled={!canSave}
-          className="min-h-12 w-full rounded-full bg-accent font-semibold text-accent-ink disabled:opacity-40"
-        >
-          {canSave ? 'Save' : 'Pick a feeling to save'}
+        <button type="button" onClick={save} disabled={!canSave} className="btn btn-primary btn-big w-full">
+          <Icon name="sparkle" size={20} />
+          {canSave ? 'Keep it safe' : 'Pick a feeling first'}
         </button>
       }
     >
-      <fieldset className="mb-5">
-        <legend className="mb-2 font-semibold text-ink">What are you feeling here?</legend>
-        <p className="mb-3 text-sm text-muted">Pick as many as fit. Not knowing is okay too.</p>
+      <fieldset className="mb-6">
+        <legend className="mb-1 text-center text-lg font-bold text-ink">What feelings live here?</legend>
+        <p className="mb-3 text-center text-sm text-muted">Pick any. Not knowing is okay too.</p>
         {groupEmotions(active).map(([group, list]) => (
-          <div key={group} className="mb-3">
-            <h3 className="mb-1.5 text-xs font-semibold tracking-wide text-muted uppercase">{group}</h3>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-              {list.map((e) => {
+          <div key={group} className="mb-4">
+            <h3 className="eyebrow mb-2 font-sans">{group}</h3>
+            <div className="grid grid-cols-3 gap-x-2.5 gap-y-3 px-1 sm:grid-cols-4">
+              {list.map((e, i) => {
                 const on = emotionIds.includes(e.id);
                 return (
                   <button
@@ -54,12 +54,21 @@ export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
                     type="button"
                     aria-pressed={on}
                     onClick={() => toggle(setEmotionIds, e.id)}
-                    className={`flex min-h-16 flex-col items-center justify-center gap-1 rounded-2xl border-2 px-1 py-2 text-center text-xs leading-tight text-ink ${on ? 'font-semibold' : 'border-transparent bg-surface-2'}`}
-                    style={on ? { borderColor: e.color, background: `${e.color}33` } : undefined}
+                    className="sticker"
+                    style={{
+                      transform: `rotate(${TILTS[i % TILTS.length]}deg)`,
+                      border: `3px solid ${on ? 'var(--outline)' : e.color}`,
+                      boxShadow: `0 ${on ? 4 : 3}px 0 ${on ? 'var(--shadow)' : e.color}`,
+                      background: on ? e.color : '#fff',
+                    }}
                   >
-                    <EmotionIcon emotion={e} size={26} />
+                    {on && (
+                      <span aria-hidden="true" className="pop absolute -top-2.5 -right-2 flex size-6 items-center justify-center rounded-full border-[2.5px] border-outline bg-accent-2 text-ink">
+                        <Icon name="sparkle" size={13} stroke={2.4} />
+                      </span>
+                    )}
+                    <EmotionIcon emotion={e} size={32} />
                     <span>{e.label}</span>
-                    {on && <span className="sr-only">(selected)</span>}
                   </button>
                 );
               })}
@@ -68,9 +77,9 @@ export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
         ))}
       </fieldset>
 
-      <fieldset className="mb-5">
-        <legend className="mb-2 font-semibold text-ink">
-          How does it feel? <span className="font-normal text-muted">(optional)</span>
+      <fieldset className="mb-6">
+        <legend className="mb-2 text-lg font-bold text-ink">
+          How does it feel? <span className="text-base font-semibold text-muted">(if you like)</span>
         </legend>
         <div className="flex flex-wrap gap-2">
           {SENSATIONS.map((s) => {
@@ -81,9 +90,9 @@ export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
                 type="button"
                 aria-pressed={on}
                 onClick={() => toggle(setSensations, s)}
-                className={`min-h-11 rounded-full border px-4 text-sm ${on ? 'border-accent bg-accent-soft font-semibold text-ink' : 'border-line text-ink'}`}
+                className="chip"
               >
-                {on && <span aria-hidden="true">✓ </span>}
+                {on && <Icon name="check" size={16} stroke={3} />}
                 {s}
               </button>
             );
@@ -91,31 +100,17 @@ export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
         </div>
       </fieldset>
 
-      <div className="mb-5">
-        <label htmlFor="intensity" className="mb-2 flex items-baseline justify-between font-semibold text-ink">
-          How strong is it?
-          <span className="text-2xl font-semibold text-accent" aria-hidden="true">{intensity}</span>
-        </label>
-        <input
-          id="intensity"
-          type="range"
-          min={1}
-          max={10}
-          step={1}
-          value={intensity}
-          onChange={(e) => setIntensity(Number(e.target.value))}
-          aria-valuetext={`${intensity} of 10`}
-          className="h-11 w-full accent-[var(--accent)]"
-        />
-        <div className="flex justify-between text-xs text-muted" aria-hidden="true">
-          <span>Barely there</span>
-          <span>Overwhelming</span>
+      <div className="mb-6">
+        <div className="mb-2 flex items-center justify-between">
+          <label htmlFor="intensity" className="text-lg font-bold text-ink">How big is it?</label>
+          <ScaleValue value={intensity} />
         </div>
+        <StarScale id="intensity" value={intensity} onChange={setIntensity} low="Barely there" high="Overwhelming" />
       </div>
 
       <div className="mb-2">
-        <label htmlFor="note" className="mb-2 block font-semibold text-ink">
-          Note <span className="font-normal text-muted">(optional)</span>
+        <label htmlFor="note" className="mb-2 flex items-center gap-2 text-lg font-bold text-ink">
+          <Icon name="pencil" size={18} /> A little note <span className="text-base font-semibold text-muted">(if you like)</span>
         </label>
         <textarea
           id="note"
@@ -123,7 +118,7 @@ export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="e.g. after the call with…"
-          className="w-full rounded-xl border border-line bg-bg p-3 text-ink placeholder:text-muted"
+          className="field"
         />
       </div>
     </Sheet>

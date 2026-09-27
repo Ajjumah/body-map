@@ -11,7 +11,7 @@ type Props = {
 export default function RegionList({ view, fills, onSelect }: Props) {
   const regions = [...orderedRegions(view), WHOLE_BODY];
   return (
-    <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2" aria-label={`Body regions, ${view} view`}>
+    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label={`Body regions, ${view} view`}>
       {regions.map((r) => {
         const f = fills?.get(r.id);
         return (
@@ -19,10 +19,10 @@ export default function RegionList({ view, fills, onSelect }: Props) {
             <button
               type="button"
               onClick={() => onSelect(r.id)}
-              className="flex min-h-12 w-full items-center justify-between gap-2 rounded-xl border border-line bg-surface px-4 py-2 text-left text-ink hover:border-accent focus-visible:outline-2 focus-visible:outline-accent"
+              className="btn w-full justify-between rounded-2xl px-4 py-2 text-left"
             >
               <span className="flex items-center gap-2">
-                {f && <span aria-hidden="true" className="inline-block size-3 rounded-full" style={{ background: f.color }} />}
+                {f && <span aria-hidden="true" className="inline-block size-4 rounded-full border-2 border-outline" style={{ background: f.color }} />}
                 {r.label}
               </span>
               {f && (

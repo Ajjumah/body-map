@@ -1,7 +1,11 @@
 import { useState } from 'react';
 import { fmtDate, fmtTime } from '../lib/format';
+import { useWorld } from '../lib/useWorld';
 import { useStore } from '../store';
+import Buddy from './Buddy';
 import EntryList from './EntryList';
+import Icon from './Icon';
+import StarScale, { ScaleValue } from './StarScale';
 import Grounding, { pickGrounding } from './Grounding';
 import MiniBody from './MiniBody';
 
@@ -36,6 +40,7 @@ export default function SessionSummary({ sessionId, onDone }: { sessionId: strin
   const [help, setHelp] = useState(initHelp);
   const [showGrounding, setShowGrounding] = useState(true);
   const grounding = pickGrounding(list, emotionById);
+  const world = useWorld();
 
   if (!session) return null;
 
@@ -46,52 +51,53 @@ export default function SessionSummary({ sessionId, onDone }: { sessionId: strin
 
   return (
     <section aria-labelledby="summary-title" className="flex flex-col gap-5">
-      <div>
-        <h2 id="summary-title" className="text-xl font-semibold text-ink">Thanks for checking in</h2>
-        <p className="text-muted">
-          {fmtDate(session.startedAt)}, {fmtTime(session.startedAt)} · {list.length} {list.length === 1 ? 'entry' : 'entries'}
-        </p>
+      <div className="flex items-center gap-3">
+        <Buddy world={world} size={72} className="bob shrink-0" />
+        <div>
+          <h2 id="summary-title" className="text-3xl text-ink">Thank you for listening to you</h2>
+          <p className="text-muted">
+            {fmtDate(session.startedAt)}, {fmtTime(session.startedAt)} · {list.length} {list.length === 1 ? 'feeling' : 'feelings'} found
+          </p>
+        </div>
       </div>
 
       {showGrounding && grounding && <Grounding kind={grounding} onDismiss={() => setShowGrounding(false)} />}
 
-      <div className="rounded-3xl border border-line bg-surface p-4">
+      <div className="card p-4">
+        <h3 className="mb-2 text-center text-xl text-ink">Your body map today</h3>
         <MiniBody entries={list} />
       </div>
 
       <EntryList entries={list} />
 
-      <div className="rounded-3xl border border-line bg-surface p-4">
+      <div className="card p-4">
         <div className="mb-4">
           {mood === undefined ? (
-            <button type="button" onClick={() => setMood(5)} className="min-h-11 rounded-full border border-line px-4 text-ink">
-              + Add an overall mood <span className="text-muted">(optional)</span>
+            <button type="button" onClick={() => setMood(5)} className="btn">
+              <Icon name="sparkle" size={18} /> How am I overall? <span className="font-semibold text-muted">(if you like)</span>
             </button>
           ) : (
             <>
-              <label htmlFor="mood" className="mb-1 flex items-baseline justify-between font-semibold text-ink">
-                Overall, how are you right now?
-                <span className="text-2xl text-accent" aria-hidden="true">{mood}</span>
-              </label>
-              <input id="mood" type="range" min={1} max={10} value={mood} onChange={(e) => setMood(Number(e.target.value))} aria-valuetext={`${mood} of 10`} className="h-11 w-full accent-[var(--accent)]" />
-              <div className="flex justify-between text-xs text-muted" aria-hidden="true">
-                <span>Really low</span>
-                <span>Really good</span>
+              <div className="mb-2 flex items-center justify-between">
+                <label htmlFor="mood" className="text-lg font-bold text-ink">Overall, how are you right now?</label>
+                <ScaleValue value={mood} />
               </div>
+              <StarScale id="mood" value={mood} onChange={setMood} low="Really low" high="Really good" />
               <button type="button" onClick={() => setMood(undefined)} className="mt-1 min-h-11 text-sm text-muted underline">
                 Clear mood
               </button>
             </>
           )}
         </div>
-        <label htmlFor="cause" className="mb-1 block font-semibold text-ink">{PROMPT_CAUSE} <span className="font-normal text-muted">(optional)</span></label>
-        <textarea id="cause" rows={2} value={cause} onChange={(e) => setCause(e.target.value)} className="mb-3 w-full rounded-xl border border-line bg-bg p-3 text-ink" />
-        <label htmlFor="help" className="mb-1 block font-semibold text-ink">{PROMPT_HELP} <span className="font-normal text-muted">(optional)</span></label>
-        <textarea id="help" rows={2} value={help} onChange={(e) => setHelp(e.target.value)} className="w-full rounded-xl border border-line bg-bg p-3 text-ink" />
+        <label htmlFor="cause" className="mb-1 flex items-center gap-2 text-lg font-bold text-ink"><Icon name="pencil" size={18} />{PROMPT_CAUSE}</label>
+        <textarea id="cause" rows={2} value={cause} onChange={(e) => setCause(e.target.value)} className="mb-3 field" />
+        <label htmlFor="help" className="mb-1 flex items-center gap-2 text-lg font-bold text-ink"><Icon name="pencil" size={18} />{PROMPT_HELP}</label>
+        <textarea id="help" rows={2} value={help} onChange={(e) => setHelp(e.target.value)} placeholder="A hug, some water, a song…" className="field" />
+        <p className="mt-2 text-sm text-muted">Both are optional. You can leave them empty.</p>
       </div>
 
-      <button type="button" onClick={done} className="min-h-12 rounded-full bg-accent font-semibold text-accent-ink">
-        Done
+      <button type="button" onClick={done} className="btn btn-primary btn-big">
+        All done
       </button>
     </section>
   );

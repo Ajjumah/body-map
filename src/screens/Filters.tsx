@@ -4,14 +4,14 @@ import type { Filters as F, Range } from '../lib/insights';
 import { useStore } from '../store';
 import { Segmented } from './BodyMapScreen';
 
-const selectCls = 'min-h-11 w-full rounded-xl border border-line bg-surface px-3 text-ink';
+const selectCls = 'field mt-1';
 
 export default function Filters({ value, onChange }: { value: F; onChange: (f: F) => void }) {
   const { emotions } = useStore();
   const set = (patch: Partial<F>) => onChange({ ...value, ...patch });
   const active = value.emotionId || value.regionId || value.range !== 'all';
   return (
-    <div className="flex flex-col gap-2 rounded-2xl bg-surface-2 p-3" role="group" aria-label="Filters">
+    <div className="card flex flex-col gap-2 p-3" role="group" aria-label="Filters">
       <Segmented<Range>
         value={value.range}
         onChange={(range) => set({ range })}

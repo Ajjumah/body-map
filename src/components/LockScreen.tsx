@@ -40,8 +40,8 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   return (
     <main className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-6 overflow-y-auto bg-bg p-6">
       <div className="text-center">
-        <h1 className="text-2xl font-semibold text-ink">Body Map is locked</h1>
-        <p className="text-muted">Enter your PIN to continue.</p>
+        <h1 className="text-3xl text-ink">Body Map is resting</h1>
+        <p className="text-muted">Enter your PIN to come in.</p>
       </div>
       <PinPad value={pin} onChange={setPin} onSubmit={submit} label="PIN" disabled={waiting} />
       <p role="alert" className="min-h-6 text-center text-warn">

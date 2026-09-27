@@ -1,15 +1,16 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import { DEFAULT_THEME, normalizeTheme, type ThemeSetting } from './lib/world';
 import type { Emotion, Entry, ImageRecord, Session } from './types';
 
 export type Settings = {
-  theme: 'system' | 'light' | 'dark';
+  theme: ThemeSetting;
   supportName?: string;
   supportContact?: string;
   pinHash?: string;
   pinSalt?: string;
 };
 
-export const DEFAULT_SETTINGS: Settings = { theme: 'system' };
+export const DEFAULT_SETTINGS: Settings = { theme: DEFAULT_THEME };
 
 interface BodyMapDB extends DBSchema {
   emotions: { key: string; value: Emotion };
@@ -56,7 +57,7 @@ export async function loadAll(): Promise<Snapshot> {
     d.get('meta', 'settings') as Promise<Settings | undefined>,
     d.get('meta', 'currentSessionId') as Promise<string | undefined>,
   ]);
-  return { emotions, sessions, entries, images, settings: { ...DEFAULT_SETTINGS, ...settings }, currentSessionId };
+  return { emotions, sessions, entries, images, settings: { ...DEFAULT_SETTINGS, ...settings, theme: normalizeTheme(settings?.theme) }, currentSessionId };
 }
 
 export async function putEmotions(list: Emotion[]) {

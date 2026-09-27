@@ -19,7 +19,7 @@ export function regionFills(entries: Entry[], emotionById: Map<string, Emotion>,
     const names = distinct.map((id) => emotionById.get(id)?.label ?? 'Unknown feeling');
     fills.set(regionId, {
       color: top?.color ?? '#b3aca3',
-      opacity: 0.35 + strongest.intensity * 0.045,
+      opacity: 0.55 + strongest.intensity * 0.04,
       emoji: top?.emoji ?? (top ? undefined : '❔'),
       imageUrl: top?.imageId ? imageUrl(top.imageId) : undefined,
       count: distinct.length,

@@ -2,6 +2,7 @@ import type { Settings, Snapshot } from '../db';
 import { regionLabel } from '../data/regions';
 import type { Emotion, Entry, Session } from '../types';
 import { blobToDataUrl, dataUrlToBlob } from './image';
+import { normalizeTheme } from './world';
 
 export const BACKUP_FORMAT = 'body-map-backup';
 
@@ -65,7 +66,7 @@ export function parseBackup(text: string, keepSettings: Settings): Snapshot {
     entries: b.entries,
     images,
     // Keep this device's PIN; take everything else from the file.
-    settings: { theme: 'system', ...(b.settings ?? {}), pinHash: keepSettings.pinHash, pinSalt: keepSettings.pinSalt },
+    settings: { ...(b.settings ?? {}), theme: normalizeTheme(b.settings?.theme), pinHash: keepSettings.pinHash, pinSalt: keepSettings.pinSalt },
     currentSessionId: b.currentSessionId,
   };
 }

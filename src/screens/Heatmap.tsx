@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import BodyFigure, { type RegionFill } from '../components/BodyFigure';
 import EmotionIcon from '../components/EmotionIcon';
+import Icon from '../components/Icon';
 import { regionLabel, regionView, type View } from '../data/regions';
 import { avg, regionCounts, topEmotions, topSensations } from '../lib/insights';
 import { useStore } from '../store';
@@ -44,9 +45,9 @@ export default function Heatmap({ entries }: { entries: Entry[] }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="flex flex-col items-center gap-2 rounded-3xl border border-line bg-surface p-4">
+        <div className="flex flex-col items-center gap-2 card p-4">
           <div className="flex w-full items-center justify-between">
-            <h3 className="font-semibold text-ink">Where feelings show up</h3>
+            <h3 className="text-xl text-ink">Where feelings show up</h3>
             <Segmented value={view} onChange={setView} options={[['front', 'Front'], ['back', 'Back']]} label="Body side" />
           </div>
           <BodyFigure view={view} fills={fills} onSelect={select} selected={selected} className="h-80 w-auto md:h-[28rem]" label={`Heatmap, ${view} view`} />
@@ -56,7 +57,7 @@ export default function Heatmap({ entries }: { entries: Entry[] }) {
             aria-pressed={selected === 'whole.body'}
             className={`min-h-11 rounded-full border px-4 text-sm text-ink ${selected === 'whole.body' ? 'border-ink' : 'border-line'}`}
           >
-            🌐 Whole body · {whole}
+            <Icon name="sparkle" size={16} /> All over · {whole}
           </button>
           <div className="flex items-center gap-2 text-xs text-muted" aria-hidden="true">
             <span>Less often</span>
@@ -70,8 +71,8 @@ export default function Heatmap({ entries }: { entries: Entry[] }) {
           {selected ? (
             <RegionDetail regionId={selected} entries={selectedEntries} onClose={() => setSelected(null)} />
           ) : (
-            <div className="rounded-3xl border border-line bg-surface p-4">
-              <h3 className="mb-2 font-semibold text-ink">Most logged areas</h3>
+            <div className="card p-4">
+              <h3 className="mb-2 text-xl text-ink">Most visited places</h3>
               <ol className="flex flex-col gap-1">
                 {ranked.map(([id, n]) => (
                   <li key={id}>
@@ -85,15 +86,15 @@ export default function Heatmap({ entries }: { entries: Entry[] }) {
             </div>
           )}
 
-          <div className="rounded-3xl border border-line bg-surface p-4">
-            <h3 className="mb-2 font-semibold text-ink">Top feelings</h3>
+          <div className="card p-4">
+            <h3 className="mb-2 text-xl text-ink">Top feelings</h3>
             <ol className="flex flex-col gap-2">
               {top3.map(([id, n], i) => {
                 const e = emotionById.get(id);
                 return (
                   <li key={id} className="flex items-center gap-3">
                     <span className="w-4 text-sm text-muted">{i + 1}.</span>
-                    <span className="flex size-9 items-center justify-center rounded-full border-2" style={{ borderColor: e?.color }}>
+                    <span className="flex size-9 items-center justify-center rounded-full border-2 border-outline" style={{ background: e?.color }}>
                       <EmotionIcon emotion={e} size={20} />
                     </span>
                     <span className="flex-1 text-ink">{e?.label ?? 'Unknown feeling'}</span>
@@ -106,9 +107,9 @@ export default function Heatmap({ entries }: { entries: Entry[] }) {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-line bg-surface p-4">
+      <div className="card p-4">
         <div className="mb-2 flex items-baseline justify-between">
-          <h3 className="font-semibold text-ink">Intensity over time</h3>
+          <h3 className="text-xl text-ink">How big, over time</h3>
           <span className="text-sm text-muted">overall avg {avg(entries.map((e) => e.intensity)).toFixed(1)}</span>
         </div>
         <IntensityChart entries={entries} />
@@ -122,15 +123,15 @@ function RegionDetail({ regionId, entries, onClose }: { regionId: RegionId; entr
   const emos = topEmotions(entries, 5);
   const sens = topSensations(entries, 5);
   return (
-    <div className="rounded-3xl border border-line bg-surface p-4" aria-live="polite">
+    <div className="card p-4" aria-live="polite">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-semibold text-ink">{regionLabel(regionId)}</h3>
+          <h3 className="text-xl text-ink">{regionLabel(regionId)}</h3>
           <p className="text-sm text-muted">
             {entries.length ? `${entries.length} ${entries.length === 1 ? 'entry' : 'entries'} · avg intensity ${avg(entries.map((e) => e.intensity)).toFixed(1)}` : 'Not logged in this period.'}
           </p>
         </div>
-        <button type="button" onClick={onClose} className="size-11 rounded-full text-xl text-muted hover:bg-surface-2" aria-label="Close area details">×</button>
+        <button type="button" onClick={onClose} className="btn btn-icon" aria-label="Close area details"><Icon name="close" size={16} stroke={2.8} /></button>
       </div>
       {emos.length > 0 && (
         <>

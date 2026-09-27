@@ -1,7 +1,11 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { useWorld } from '../lib/useWorld';
+import Buddy from './Buddy';
+import Icon from './Icon';
 
 /** Bottom sheet on mobile, side panel on desktop. */
 export default function Sheet({ title, onClose, children, footer }: { title: string; onClose: () => void; children: ReactNode; footer?: ReactNode }) {
+  const world = useWorld();
   const ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -28,25 +32,25 @@ export default function Sheet({ title, onClose, children, footer }: { title: str
   }, []);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end md:items-stretch md:justify-end">
-      <div className="absolute inset-0 bg-black/30" onClick={onClose} aria-hidden="true" />
+    <div className="fixed inset-0 z-40 flex items-end md:items-center md:justify-end md:p-4">
+      <div className="absolute inset-0 bg-[#150f33]/45" onClick={onClose} aria-hidden="true" />
       <div
         ref={ref}
         role="dialog"
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="sheet-in relative flex max-h-[88dvh] w-full flex-col rounded-t-3xl bg-surface shadow-xl outline-none md:max-h-none md:w-[440px] md:rounded-none md:rounded-l-3xl"
+        className="card sheet-in relative mx-2 mt-10 flex max-h-[86dvh] w-full flex-col rounded-b-none border-b-0 outline-none md:mx-0 md:mt-0 md:max-h-[94dvh] md:w-[460px] md:rounded-b-[var(--radius)] md:border-b-3"
       >
-        <div className="flex items-center justify-between gap-2 border-b border-line px-5 pt-3 pb-3">
-          <div aria-hidden="true" className="absolute top-2 left-1/2 h-1 w-10 -translate-x-1/2 rounded-full bg-line md:hidden" />
-          <h2 className="pt-2 text-lg font-semibold text-ink">{title}</h2>
-          <button type="button" onClick={onClose} className="mt-1 size-11 rounded-full text-xl text-muted hover:bg-surface-2" aria-label="Close">
-            ×
-          </button>
+        <div className="pointer-events-none absolute -top-6 left-1/2 flex max-w-[80%] -translate-x-1/2 items-center gap-2 rounded-full border-3 border-outline bg-accent-2 py-1 pr-5 pl-1.5 shadow-[0_4px_0_var(--shadow)]">
+          <Buddy world={world} size={34} />
+          <h2 className="truncate text-xl text-ink">{title}</h2>
         </div>
-        <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">{children}</div>
-        {footer && <div className="border-t border-line px-5 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">{footer}</div>}
+        <button type="button" onClick={onClose} className="btn btn-icon absolute top-2.5 right-2.5 z-10" aria-label="Close">
+          <Icon name="close" size={18} stroke={2.8} />
+        </button>
+        <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-9 pb-4">{children}</div>
+        {footer && <div className="border-t-3 border-dashed border-line px-4 py-3 pb-[max(0.9rem,env(safe-area-inset-bottom))]">{footer}</div>}
       </div>
     </div>
   );

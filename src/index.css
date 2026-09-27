@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-warn: var(--warn);
+  --font-sans: ui-rounded, "SF Pro Rounded", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+:root {
+  --bg: #f6f4f0;
+  --surface: #ffffff;
+  --surface-2: #efece6;
+  --ink: #2f3a3f;
+  --muted: #5f6b70;
+  --line: #d6d1c8;
+  --accent: #56737f;
+  --accent-ink: #ffffff;
+  --accent-soft: #dde7ea;
+  --warn: #9a6a4f;
+  --body-stroke: #7d8f96;
+  --body-fill: #ffffff;
+  color-scheme: light;
+}
+.dark {
+  --bg: #1b2124;
+  --surface: #242c30;
+  --surface-2: #2d363b;
+  --ink: #e6e9ea;
+  --muted: #a4b0b5;
+  --line: #3b474d;
+  --accent: #8fb0bc;
+  --accent-ink: #13191c;
+  --accent-soft: #2f4148;
+  --warn: #d4a489;
+  --body-stroke: #8fa3aa;
+  --body-fill: #2a3337;
+  color-scheme: dark;
+}
+
+html, body, #root { min-height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Body map regions */
+.region {
+  cursor: pointer;
+  stroke: var(--body-stroke);
+  stroke-width: 1;
+  stroke-linejoin: round;
+  stroke-opacity: 0.7;
+  transition: filter 160ms ease, fill-opacity 160ms ease;
+  outline: none;
+}
+.region:hover, .region:focus-visible {
+  filter: drop-shadow(0 0 4px var(--accent)) drop-shadow(0 0 2px var(--accent));
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-opacity: 1;
+}
+.region.readonly { cursor: default; }
+.region.selected { stroke: var(--ink); stroke-width: 2.5; stroke-opacity: 1; stroke-dasharray: 4 2; }
+.region.readonly:hover { filter: none; stroke: var(--body-stroke); stroke-width: 1; stroke-opacity: 0.7; }
+
+@keyframes breathe {
+  0% { transform: scale(0.6); }
+  21% { transform: scale(1); }      /* 4s in */
+  58% { transform: scale(1); }      /* 7s hold */
+  100% { transform: scale(0.6); }   /* 8s out */
+}
+.breathe { animation: breathe 19s ease-in-out infinite; }
+
+@keyframes sheet-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sheet-in { animation: sheet-up 200ms ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+  .breathe { animation: none; }
+}

@@ -12,6 +12,14 @@ npm run preview    # serve dist/ at http://localhost:4173 (use this to test offl
 npm test           # unit tests (logic, PIN hashing, CSV, IndexedDB backup round trip)
 ```
 
+## Deploy
+
+Every push to `main` builds and deploys to GitHub Pages through `.github/workflows/deploy.yml`, after the tests pass. The workflow sets `BASE_PATH=/<repo>/` so assets, the manifest and the service worker all resolve under the Pages subpath. To reproduce that build locally:
+
+```bash
+BASE_PATH=/body-map/ npm run build && BASE_PATH=/body-map/ npm run preview   # http://localhost:4173/body-map/
+```
+
 ## Layout
 
 - `src/data/regions.ts`: SVG geometry for the 26 front and 8 back regions, plus "Whole body"

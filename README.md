@@ -43,7 +43,7 @@ Tokens live in `src/index.css` under `[data-world="…"]`. `--ink` and `--muted`
 
 ## Languages
 
-English, Afrikaans, isiZulu, isiXhosa, Spanish, French and Portuguese, chosen in Settings → Language (defaults to the browser's language). Strings live in `src/i18n/<code>.ts`. Each file must provide every key in `en.ts` (TypeScript enforces this), and a test checks that `{placeholders}` survive translation. All translations except English are machine-drafted. **Have first-language speakers review them, especially isiZulu and isiXhosa and the Help screen, before relying on them.** Saved data stays language-neutral: emotions, sensations, regions and context tags are stored by id and translated on display, and renamed feelings keep the person's own wording.
+English, Afrikaans, isiZulu, isiXhosa, Spanish, French and Portuguese, chosen in Settings → Language (English until changed). Strings live in `src/i18n/<code>.ts`. Each file must provide every key in `en.ts` (TypeScript enforces this), and a test checks that `{placeholders}` survive translation. All translations except English are machine-drafted. **Have first-language speakers review them, especially isiZulu and isiXhosa and the Help screen, before relying on them.** Saved data stays language-neutral: emotions, sensations, regions and context tags are stored by id and translated on display, and renamed feelings keep the person's own wording.
 
 ## Helplines
 

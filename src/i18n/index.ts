@@ -28,14 +28,8 @@ export const LOCALE: Record<Lang, string> = { en: 'en', af: 'af-ZA', zu: 'zu-ZA'
 
 export const isLang = (v: unknown): v is Lang => typeof v === 'string' && v in LANGS;
 
-/** First supported language from the browser's preferences, else English. */
-export function detectLang(prefs: readonly string[] = typeof navigator !== 'undefined' ? navigator.languages ?? [navigator.language] : []): Lang {
-  for (const p of prefs) {
-    const base = p.toLowerCase().split('-')[0];
-    if (isLang(base)) return base;
-  }
-  return 'en';
-}
+/** Language used until the person picks one in Settings. */
+export const DEFAULT_LANG: Lang = 'en';
 
 export type Vars = Record<string, string | number>;
 
@@ -91,10 +85,10 @@ const GROUP_KEYS: Record<string, string> = {
   Unsure: 'unsure',
 };
 
-/** The current language, from settings or the browser. */
+/** The current language: the person's choice, else English. */
 export function useLang(): Lang {
   const { settings } = useStore();
-  return settings.language ?? detectLang();
+  return settings.language ?? DEFAULT_LANG;
 }
 
 export function useT() {

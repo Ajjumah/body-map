@@ -181,7 +181,7 @@ describe('translations', async () => {
   }
 
   it('translates default emotions, keeps renamed ones, and plural-picks', async () => {
-    const { makeT, detectLang } = await import('../i18n');
+    const { makeT, DEFAULT_LANG } = await import('../i18n');
     const tr = makeT('af');
     const anxious = DEFAULT_EMOTIONS.find((e) => e.id === 'default.anxious')!;
     expect(tr.emotion(anxious)).toBe('Angstig');
@@ -189,8 +189,7 @@ describe('translations', async () => {
     expect(tr.tn('map.feelings', 1)).toBe('1 gevoel');
     expect(tr.tn('map.feelings', 3)).toBe('3 gevoelens');
     expect(tr.region('front.heart')).toBe('Hartstreek');
-    expect(detectLang(['zu-ZA', 'en'])).toBe('zu');
-    expect(detectLang(['de-DE'])).toBe('en');
+    expect(DEFAULT_LANG).toBe('en');
   });
 });
 

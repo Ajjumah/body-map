@@ -6,7 +6,7 @@ import Icon from '../components/Icon';
 import { CONTEXT_GROUPS, emptyTags } from '../data/context';
 import { groupEmotions } from '../data/emotions';
 import { DEFAULT_COUNTRY, HELPLINES, OTHER_COUNTRY, detectCountry } from '../data/helplines';
-import { LANGS, detectLang, isLang, useT } from '../i18n';
+import { DEFAULT_LANG, LANGS, isLang, useT } from '../i18n';
 import { BackupError, download, entriesCsv } from '../lib/backup';
 import { WORLDS, type ThemeSetting, type World } from '../lib/world';
 import { useStore } from '../store';
@@ -303,7 +303,7 @@ function WorldPicker() {
 function LanguageCard() {
   const { settings, updateSettings } = useStore();
   const { t } = useT();
-  const current = settings.language ?? detectLang();
+  const current = settings.language ?? DEFAULT_LANG;
   return (
     <Card title={t('settings.language')} id="set-lang">
       <label className="sr-only" htmlFor="lang-select">{t('settings.language')}</label>

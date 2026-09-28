@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { groupEmotions, SENSATIONS } from '../data/emotions';
-import { regionLabel } from '../data/regions';
+import { useT } from '../i18n';
 import { useStore, type EntryDraft } from '../store';
 import type { RegionId } from '../types';
 import EmotionIcon from './EmotionIcon';
@@ -14,6 +14,8 @@ type Props = { regionId: RegionId; onSave: (d: EntryDraft) => void; onClose: () 
 
 export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
   const { emotions } = useStore();
+  const tr = useT();
+  const { t } = tr;
   const [emotionIds, setEmotionIds] = useState<string[]>([]);
   const [sensations, setSensations] = useState<string[]>([]);
   const [intensity, setIntensity] = useState(5);
@@ -30,21 +32,21 @@ export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
 
   return (
     <Sheet
-      title={regionLabel(regionId)}
+      title={tr.region(regionId)}
       onClose={onClose}
       footer={
         <button type="button" onClick={save} disabled={!canSave} className="btn btn-primary btn-big w-full">
           <Icon name="sparkle" size={20} />
-          {canSave ? 'Keep it safe' : 'Pick a feeling first'}
+          {t(canSave ? 'checkin.save' : 'checkin.pickFirst')}
         </button>
       }
     >
       <fieldset className="mb-6">
-        <legend className="mb-1 text-center text-lg font-bold text-ink">What feelings live here?</legend>
-        <p className="mb-3 text-center text-sm text-muted">Pick any. Not knowing is okay too.</p>
+        <legend className="mb-1 text-center text-lg font-bold text-ink">{t('checkin.whatFeelings')}</legend>
+        <p className="mb-3 text-center text-sm text-muted">{t('checkin.pickAny')}</p>
         {groupEmotions(active).map(([group, list]) => (
           <div key={group} className="mb-4">
-            <h3 className="eyebrow mb-2 font-sans">{group}</h3>
+            <h3 className="eyebrow mb-2 font-sans">{tr.group(group)}</h3>
             <div className="grid grid-cols-3 gap-x-2.5 gap-y-3 px-1 sm:grid-cols-4">
               {list.map((e, i) => {
                 const on = emotionIds.includes(e.id);
@@ -68,7 +70,7 @@ export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
                       </span>
                     )}
                     <EmotionIcon emotion={e} size={32} />
-                    <span>{e.label}</span>
+                    <span>{tr.emotion(e)}</span>
                   </button>
                 );
               })}
@@ -79,7 +81,7 @@ export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
 
       <fieldset className="mb-6">
         <legend className="mb-2 text-lg font-bold text-ink">
-          How does it feel? <span className="text-base font-semibold text-muted">(if you like)</span>
+          {t('checkin.howFeel')} <span className="text-base font-semibold text-muted">{t('common.optional')}</span>
         </legend>
         <div className="flex flex-wrap gap-2">
           {SENSATIONS.map((s) => {
@@ -93,7 +95,7 @@ export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
                 className="chip"
               >
                 {on && <Icon name="check" size={16} stroke={3} />}
-                {s}
+                {tr.sensation(s)}
               </button>
             );
           })}
@@ -102,22 +104,22 @@ export default function CheckInSheet({ regionId, onSave, onClose }: Props) {
 
       <div className="mb-6">
         <div className="mb-2 flex items-center justify-between">
-          <label htmlFor="intensity" className="text-lg font-bold text-ink">How big is it?</label>
+          <label htmlFor="intensity" className="text-lg font-bold text-ink">{t('checkin.howBig')}</label>
           <ScaleValue value={intensity} />
         </div>
-        <StarScale id="intensity" value={intensity} onChange={setIntensity} low="Barely there" high="Overwhelming" />
+        <StarScale id="intensity" value={intensity} onChange={setIntensity} low={t('checkin.barely')} high={t('checkin.overwhelming')} />
       </div>
 
       <div className="mb-2">
         <label htmlFor="note" className="mb-2 flex items-center gap-2 text-lg font-bold text-ink">
-          <Icon name="pencil" size={18} /> A little note <span className="text-base font-semibold text-muted">(if you like)</span>
+          <Icon name="pencil" size={18} /> {t('checkin.note')} <span className="text-base font-semibold text-muted">{t('common.optional')}</span>
         </label>
         <textarea
           id="note"
           rows={2}
           value={note}
           onChange={(e) => setNote(e.target.value)}
-          placeholder="e.g. after the call with…"
+          placeholder={t('checkin.notePlaceholder')}
           className="field"
         />
       </div>

@@ -41,6 +41,22 @@ Three playful worlds, switchable in Settings → "Choose your world":
 
 Tokens live in `src/index.css` under `[data-world="…"]`. `--ink` and `--muted` switch automatically between page text and text on a surface, so `.card`, `.btn`, `.chip`, `.sticker` and `.field` stay readable in every world. Fonts (Nunito, Gaegu, Fredoka, Baloo 2) are bundled through `@fontsource` and precached, so nothing is fetched from Google. Older `light`/`dark`/`system` settings migrate to `sticker`/`starlight`/`sticker`.
 
+## Languages
+
+English, Afrikaans, isiZulu, isiXhosa, Spanish, French and Portuguese, chosen in Settings → Language (defaults to the browser's language). Strings live in `src/i18n/<code>.ts`. Each file must provide every key in `en.ts` (TypeScript enforces this), and a test checks that `{placeholders}` survive translation. All translations except English are machine-drafted. **Have first-language speakers review them, especially isiZulu and isiXhosa and the Help screen, before relying on them.** Saved data stays language-neutral: emotions, sensations, regions and context tags are stored by id and translated on display, and renamed feelings keep the person's own wording.
+
+## Helplines
+
+`src/data/helplines.ts` lists free crisis lines and emergency numbers for South Africa, the US, Canada, the UK, Ireland, Australia, New Zealand, India, Spain, France, Portugal, Brazil and Mexico, with findahelpline.com for anywhere else. The Help screen guesses the country from the device time zone, then the browser language, then falls back to South Africa, and Settings → Helpline country overrides it. The numbers were checked on 2026-09-28; re-check them periodically.
+
+## Feeling colours
+
+Default feelings are colour-coded: hard feelings (anxious, low, hurt/angry) in shades of red and coral, good feelings in greens, and tired or unsure in soft neutrals. Every colour keeps dark text at 4.5:1 or better (tested), and each feeling always shows its emoji and name, so colour is never the only signal.
+
+## Check-in context
+
+After finishing a check-in, optional "What were you doing? / Who were you with? / Where were you?" tags can be added, including your own. They are saved on the session, shown in Memories, and included in the CSV export.
+
 ## Privacy notes
 
 - No backend and no network calls for user data. Export/CSV downloads use local object URLs.

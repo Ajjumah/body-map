@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
+import { useT } from '../i18n';
 
 /** Numeric PIN entry: a real input (for keyboards/screen readers) plus a large on-screen keypad. */
 export default function PinPad({ value, onChange, onSubmit, label, disabled }: { value: string; onChange: (v: string) => void; onSubmit: () => void; label: string; disabled?: boolean }) {
   const ref = useRef<HTMLInputElement>(null);
+  const { t } = useT();
   useEffect(() => ref.current?.focus(), []);
   const press = (d: string) => value.length < 6 && onChange(value + d);
   const key = 'btn size-16 p-0 font-display text-3xl';
@@ -37,7 +39,7 @@ export default function PinPad({ value, onChange, onSubmit, label, disabled }: {
         <button type="button" tabIndex={-1} disabled={disabled} className={key} onClick={() => press('0')}>0</button>
         <button type="submit" tabIndex={-1} disabled={disabled || value.length < 4} className={`${key} btn-primary`}>✓</button>
       </div>
-      <button type="submit" disabled={disabled || value.length < 4} className="sr-only">Submit PIN</button>
+      <button type="submit" disabled={disabled || value.length < 4} className="sr-only">{t('pin.submit')}</button>
     </form>
   );
 }

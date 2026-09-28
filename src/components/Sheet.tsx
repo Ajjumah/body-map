@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { useT } from '../i18n';
 import { useWorld } from '../lib/useWorld';
 import Buddy from './Buddy';
 import Icon from './Icon';
@@ -6,6 +7,7 @@ import Icon from './Icon';
 /** Bottom sheet on mobile, side panel on desktop. */
 export default function Sheet({ title, onClose, children, footer }: { title: string; onClose: () => void; children: ReactNode; footer?: ReactNode }) {
   const world = useWorld();
+  const { t } = useT();
   const ref = useRef<HTMLDivElement>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -46,7 +48,7 @@ export default function Sheet({ title, onClose, children, footer }: { title: str
           <Buddy world={world} size={34} />
           <h2 className="truncate text-xl text-ink">{title}</h2>
         </div>
-        <button type="button" onClick={onClose} className="btn btn-icon absolute top-2.5 right-2.5 z-10" aria-label="Close">
+        <button type="button" onClick={onClose} className="btn btn-icon absolute top-2.5 right-2.5 z-10" aria-label={t('common.close')}>
           <Icon name="close" size={18} stroke={2.8} />
         </button>
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-9 pb-4">{children}</div>

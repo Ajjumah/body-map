@@ -1,5 +1,6 @@
 import type { KeyboardEvent } from 'react';
 import { BACK_DECOR, orderedRegions, type View } from '../data/regions';
+import { useT } from '../i18n';
 import type { RegionId } from '../types';
 import { sparklePath } from './Icon';
 
@@ -32,6 +33,7 @@ type Props = {
 };
 
 export default function BodyFigure({ view, fills, onSelect, readOnly, showBadges = true, className, label, selected, decorate = false }: Props) {
+  const tr = useT();
   const regions = orderedRegions(view);
   const interactive = !!onSelect;
 
@@ -47,7 +49,7 @@ export default function BodyFigure({ view, fills, onSelect, readOnly, showBadges
       viewBox="25 2 150 436"
       className={className}
       role="group"
-      aria-label={label ?? `Body, ${view} view`}
+      aria-label={label ?? tr.t('figure.label', { side: tr.t(view === 'front' ? 'map.sideFront' : 'map.sideBack') })}
     >
       {view === 'back' &&
         BACK_DECOR.map((d, i) => (
@@ -70,13 +72,13 @@ export default function BodyFigure({ view, fills, onSelect, readOnly, showBadges
               ? {
                   role: 'button',
                   tabIndex: 0,
-                  'aria-label': f?.description ? `${r.label}. ${f.description}` : r.label,
+                  'aria-label': f?.description ? `${tr.region(r.id)}. ${f.description}` : tr.region(r.id),
                   onClick: () => onSelect!(r.id),
                   onKeyDown: (e: KeyboardEvent) => onKey(e, r.id),
                 }
               : { 'aria-hidden': true })}
           >
-            <title>{r.label}</title>
+            <title>{tr.region(r.id)}</title>
           </path>
         );
       })}

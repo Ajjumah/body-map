@@ -63,7 +63,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // Upgrade default emotions still wearing their original muted colour; user-picked colours are left alone.
       const upgraded = em.flatMap((e) => {
         const next = DEFAULT_EMOTIONS.find((d) => d.id === e.id);
-        return next && e.isDefault && LEGACY_DEFAULT_COLORS[e.id] === e.color ? [{ ...e, color: next.color }] : [];
+        return next && e.isDefault && LEGACY_DEFAULT_COLORS[e.id]?.includes(e.color) ? [{ ...e, color: next.color }] : [];
       });
       if (upgraded.length) {
         await DB.putEmotions(upgraded);

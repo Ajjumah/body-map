@@ -3,8 +3,11 @@ import Buddy from '../components/Buddy';
 import ConfirmDialog from '../components/ConfirmDialog';
 import EmotionIcon from '../components/EmotionIcon';
 import Icon from '../components/Icon';
+import { CONTEXT_GROUPS, emptyTags } from '../data/context';
 import { groupEmotions } from '../data/emotions';
-import { download, entriesCsv } from '../lib/backup';
+import { DEFAULT_COUNTRY, HELPLINES, OTHER_COUNTRY, detectCountry } from '../data/helplines';
+import { LANGS, detectLang, isLang, useT } from '../i18n';
+import { BackupError, download, entriesCsv } from '../lib/backup';
 import { WORLDS, type ThemeSetting, type World } from '../lib/world';
 import { useStore } from '../store';
 import type { Emotion } from '../types';
@@ -27,39 +30,46 @@ export default function SettingsScreen() {
   const [supportName, setSupportName] = useState(settings.supportName ?? '');
   const [supportContact, setSupportContact] = useState(settings.supportContact ?? '');
   const [savedMsg, setSavedMsg] = useState('');
+  const { t } = useT();
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-3xl text-ink">Settings</h2>
+      <h2 className="text-3xl text-ink">{t('settings.title')}</h2>
 
-      <Card title="Choose your world" id="set-theme">
+      <Card title={t('settings.world')} id="set-theme">
         <WorldPicker />
       </Card>
 
+      <LanguageCard />
+
       <EmotionManager />
 
+      <TagsCard />
 
-      <Card title="Support contact" id="set-support">
-        <p className="mb-3 text-sm text-muted">Someone you trust, shown on the Help screen so they’re easy to reach.</p>
+
+      <CountryCard />
+
+      <Card title={t('settings.support')} id="set-support">
+        <p className="mb-3 text-sm text-muted">{t('settings.supportIntro')}</p>
         <form
           className="flex flex-col gap-3"
           onSubmit={async (e) => {
             e.preventDefault();
             await updateSettings({ supportName: supportName.trim() || undefined, supportContact: supportContact.trim() || undefined });
-            setSavedMsg('Saved.');
+            setSavedMsg(t('common.saved'));
             setTimeout(() => setSavedMsg(''), 2000);
           }}
         >
           <label className="font-bold text-ink">
-            Name
-            <input value={supportName} onChange={(e) => setSupportName(e.target.value)} className="field mt-1" placeholder="e.g. My sister, Dr Naidoo" />
+            {t('settings.supportName')}
+            <input value={supportName} onChange={(e) => setSupportName(e.target.value)} className="field mt-1" placeholder={t('settings.supportNamePh')} />
           </label>
           <label className="font-bold text-ink">
-            Phone number or other contact
-            <input value={supportContact} onChange={(e) => setSupportContact(e.target.value)} className="field mt-1" inputMode="tel" placeholder="e.g. 082 000 0000" />
+            {t('settings.supportContact')}
+            <input value={supportContact} onChange={(e) => setSupportContact(e.target.value)} className="field mt-1" inputMode="tel" placeholder={t('settings.supportContactPh')} />
           </label>
           <div className="flex items-center gap-3">
-            <button type="submit" className="btn btn-primary">Save contact</button>
+            <button type="submit" className="btn btn-primary">{t('settings.saveContact')}</button>
             <span aria-live="polite" className="text-sm text-muted">{savedMsg}</span>
           </div>
         </form>
@@ -69,7 +79,7 @@ export default function SettingsScreen() {
 
       <DataCard />
 
-      <p className="pb-4 text-center text-xs text-muted">Everything you enter stays on this device. Nothing is sent anywhere.</p>
+      <p className="pb-4 text-center text-xs text-muted">{t('settings.footer')}</p>
     </div>
   );
 }
@@ -81,21 +91,23 @@ function EmotionManager() {
   const [msg, setMsg] = useState('');
   const [showArchived, setShowArchived] = useState(false);
   const list = emotions.filter((e) => showArchived || !e.archived);
+  const tr = useT();
+  const { t } = tr;
 
   const iconBtn = 'btn btn-ghost btn-icon text-ink disabled:opacity-30';
   return (
-    <Card title="Feelings" id="set-emotions">
+    <Card title={t('feelings.title')} id="set-emotions">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <button type="button" onClick={() => setEditing('new')} className="btn btn-primary"><Icon name="sparkle" size={18} /> Add a feeling</button>
+        <button type="button" onClick={() => setEditing('new')} className="btn btn-primary"><Icon name="sparkle" size={18} /> {t('feelings.add')}</button>
         <label className="flex min-h-11 items-center gap-2 text-sm text-muted">
           <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} className="size-5" />
-          Show archived
+          {t('feelings.showArchived')}
         </label>
       </div>
       <p aria-live="polite" className="text-sm text-muted">{msg}</p>
       {groupEmotions(list).map(([group, items]) => (
         <div key={group} className="mb-3">
-          <h4 className="eyebrow mb-1">{group}</h4>
+          <h4 className="eyebrow mb-1">{tr.group(group)}</h4>
           <ul className="flex flex-col">
             {items.map((e, i) => (
               <li key={e.id} className={`flex flex-wrap items-center gap-x-1 border-b-2 border-dashed border-line py-1 last:border-0 ${e.archived ? 'opacity-60' : ''}`}>
@@ -103,19 +115,19 @@ function EmotionManager() {
                   <EmotionIcon emotion={e} size={20} />
                 </span>
                 <span className="min-w-[8.5rem] flex-1 text-ink">
-                  {e.label}
-                  {e.archived && <span className="ml-1 text-xs text-muted">(archived)</span>}
+                  {tr.emotion(e)}
+                  {e.archived && <span className="ml-1 text-xs text-muted">{t('feelings.archived')}</span>}
                 </span>
                 <span className="ml-auto flex">
-                <button type="button" className={iconBtn} disabled={i === 0} onClick={() => reorderEmotion(e.id, -1)} aria-label={`Move ${e.label} up`}><Icon name="up" size={18} /></button>
-                <button type="button" className={iconBtn} disabled={i === items.length - 1} onClick={() => reorderEmotion(e.id, 1)} aria-label={`Move ${e.label} down`}><Icon name="down" size={18} /></button>
-                <button type="button" className={iconBtn} onClick={() => setEditing(e)} aria-label={`Edit ${e.label}`}><Icon name="pencil" size={18} /></button>
+                <button type="button" className={iconBtn} disabled={i === 0} onClick={() => reorderEmotion(e.id, -1)} aria-label={t('feelings.moveUp', { name: tr.emotion(e) })}><Icon name="up" size={18} /></button>
+                <button type="button" className={iconBtn} disabled={i === items.length - 1} onClick={() => reorderEmotion(e.id, 1)} aria-label={t('feelings.moveDown', { name: tr.emotion(e) })}><Icon name="down" size={18} /></button>
+                <button type="button" className={iconBtn} onClick={() => setEditing(e)} aria-label={t('feelings.edit', { name: tr.emotion(e) })}><Icon name="pencil" size={18} /></button>
                 {e.archived ? (
-                  <button type="button" className={iconBtn} onClick={() => saveEmotion({ ...e, archived: false })} aria-label={`Restore ${e.label}`}><Icon name="restore" size={18} /></button>
+                  <button type="button" className={iconBtn} onClick={() => saveEmotion({ ...e, archived: false })} aria-label={t('feelings.restore', { name: tr.emotion(e) })}><Icon name="restore" size={18} /></button>
                 ) : (
-                  <button type="button" className={iconBtn} onClick={() => saveEmotion({ ...e, archived: true })} aria-label={`Archive ${e.label}`} title="Archive (hide from picker)"><Icon name="archive" size={18} /></button>
+                  <button type="button" className={iconBtn} onClick={() => saveEmotion({ ...e, archived: true })} aria-label={t('feelings.archive', { name: tr.emotion(e) })} title={t('feelings.archiveHint')}><Icon name="archive" size={18} /></button>
                 )}
-                <button type="button" className={iconBtn} onClick={() => setConfirmDel(e)} aria-label={`Delete ${e.label}`}><Icon name="trash" size={18} /></button>
+                <button type="button" className={iconBtn} onClick={() => setConfirmDel(e)} aria-label={t('feelings.delete', { name: tr.emotion(e) })}><Icon name="trash" size={18} /></button>
                 </span>
               </li>
             ))}
@@ -125,16 +137,16 @@ function EmotionManager() {
       {editing && <EmotionEditor emotion={editing === 'new' ? undefined : editing} onClose={() => setEditing(null)} />}
       {confirmDel && (
         <ConfirmDialog
-          title={`Delete “${confirmDel.label}”?`}
-          confirmLabel="Delete"
+          title={t('feelings.deleteTitle', { name: tr.emotion(confirmDel) })}
+          confirmLabel={t('common.delete')}
           onCancel={() => setConfirmDel(null)}
           onConfirm={async () => {
             const r = await removeEmotion(confirmDel.id);
-            setMsg(r === 'archived' ? `“${confirmDel.label}” is used in your history, so it was archived instead. It won’t appear in the picker.` : `Deleted “${confirmDel.label}”.`);
+            setMsg(t(r === 'archived' ? 'feelings.wasArchived' : 'feelings.deleted', { name: tr.emotion(confirmDel) }));
             setConfirmDel(null);
           }}
         >
-          If this feeling is already used in your history it will be archived instead, so past entries stay intact.
+          {t('feelings.deleteBody')}
         </ConfirmDialog>
       )}
     </Card>
@@ -148,11 +160,13 @@ function DataCard() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const file = useRef<HTMLInputElement>(null);
   const stamp = () => new Date().toISOString().slice(0, 10);
+  const tr = useT();
+  const { t } = tr;
 
   return (
-    <Card title="Your data" id="set-data">
+    <Card title={t('data.title')} id="set-data">
       <p className="mb-3 text-sm text-muted">
-        {sessions.length} check-ins · {entries.length} entries. Export to keep a backup or to share with a therapist.
+        {t('data.summary', { sessions: sessions.length, entries: entries.length })}
       </p>
       <div className="flex flex-wrap gap-2">
         <button
@@ -160,29 +174,29 @@ function DataCard() {
           className={btn}
           onClick={async () => {
             download(`body-map-backup-${stamp()}.json`, JSON.stringify(await exportBackup(), null, 2), 'application/json');
-            setMsg('Backup saved.');
+            setMsg(t('data.backupSaved'));
           }}
         >
-          <Icon name="download" size={18} /> Export all (JSON)
+          <Icon name="download" size={18} /> {t('data.exportJson')}
         </button>
         <button
           type="button"
           className={btn}
           onClick={() => {
-            download(`body-map-entries-${stamp()}.csv`, entriesCsv(entries, sessions, emotionById), 'text/csv');
-            setMsg('Entries saved as CSV.');
+            download(`body-map-entries-${stamp()}.csv`, entriesCsv(entries, sessions, emotionById, tr), 'text/csv');
+            setMsg(t('data.csvSaved'));
           }}
         >
-          <Icon name="download" size={18} /> Export entries (CSV)
+          <Icon name="download" size={18} /> {t('data.exportCsv')}
         </button>
-        <button type="button" className={btn} onClick={() => file.current?.click()}><Icon name="upload" size={18} /> Import backup</button>
+        <button type="button" className={btn} onClick={() => file.current?.click()}><Icon name="upload" size={18} /> {t('data.import')}</button>
         <input
           ref={file}
           type="file"
           accept="application/json,.json"
           className="sr-only"
           tabIndex={-1}
-          aria-label="Backup file"
+          aria-label={t('data.backupFile')}
           data-testid="import-input"
           onChange={async (e) => {
             const f = e.target.files?.[0];
@@ -195,41 +209,41 @@ function DataCard() {
 
       <div className="mt-4 border-t border-line pt-4">
         <button type="button" onClick={() => setConfirmDelete(true)} className="btn btn-danger">
-          Delete all data…
+          {t('data.deleteAll')}
         </button>
       </div>
 
       {pendingImport !== null && (
         <ConfirmDialog
-          title="Replace your data with this backup?"
-          confirmLabel="Import"
+          title={t('data.importTitle')}
+          confirmLabel={t('data.importButton')}
           onCancel={() => setPendingImport(null)}
           onConfirm={async () => {
             try {
               const r = await importBackup(pendingImport);
-              setMsg(`Imported ${r.sessions} check-ins and ${r.entries} entries.`);
+              setMsg(t('data.imported', { sessions: r.sessions, entries: r.entries }));
             } catch (err) {
-              setMsg(err instanceof Error ? err.message : 'Import failed.');
+              setMsg(err instanceof BackupError ? t(`data.${err.code}` as const) : t('data.importFailed'));
             }
             setPendingImport(null);
           }}
         >
-          Everything currently on this device will be replaced by the contents of the file. Your app lock PIN stays the same.
+          {t('data.importBody')}
         </ConfirmDialog>
       )}
       {confirmDelete && (
         <ConfirmDialog
-          title="Delete all data?"
-          confirmLabel="Delete everything"
-          typeToConfirm="DELETE"
+          title={t('data.deleteTitle')}
+          confirmLabel={t('data.deleteButton')}
+          typeToConfirm={t('common.deleteWord')}
           onCancel={() => setConfirmDelete(false)}
           onConfirm={async () => {
             await deleteAll();
             setConfirmDelete(false);
-            setMsg('All data deleted.');
+            setMsg(t('data.deleted'));
           }}
         >
-          This permanently removes every check-in, entry, custom feeling, picture and setting (including the app lock) from this device. It can’t be undone. Consider exporting a backup first.
+          {t('data.deleteBody')}
         </ConfirmDialog>
       )}
     </Card>
@@ -238,12 +252,13 @@ function DataCard() {
 
 function WorldPicker() {
   const { settings, updateSettings } = useStore();
+  const { t } = useT();
   const options: [ThemeSetting, string, string][] = [
-    ...(Object.keys(WORLDS) as World[]).map((w) => [w, WORLDS[w].name, `${WORLDS[w].blurb} With ${WORLDS[w].buddy}.`] as [ThemeSetting, string, string]),
-    ['auto', 'Match my device', 'Sticker Book by day, Starlight Pocket when your device is in dark mode.'],
+    ...(Object.keys(WORLDS) as World[]).map((w) => [w, t(`world.${w}`), t('settings.worldWith', { blurb: t(`world.${w}.blurb`), buddy: WORLDS[w].buddy })] as [ThemeSetting, string, string]),
+    ['auto', t('settings.auto'), t('settings.autoBlurb')],
   ];
   return (
-    <div role="radiogroup" aria-label="World" className="grid gap-3 sm:grid-cols-2">
+    <div role="radiogroup" aria-label={t('settings.worldLabel')} className="grid gap-3 sm:grid-cols-2">
       {options.map(([id, name, blurb]) => {
         const on = settings.theme === id;
         const preview: World = id === 'auto' ? 'starlight' : id;
@@ -282,5 +297,69 @@ function WorldPicker() {
         );
       })}
     </div>
+  );
+}
+
+function LanguageCard() {
+  const { settings, updateSettings } = useStore();
+  const { t } = useT();
+  const current = settings.language ?? detectLang();
+  return (
+    <Card title={t('settings.language')} id="set-lang">
+      <label className="sr-only" htmlFor="lang-select">{t('settings.language')}</label>
+      <select id="lang-select" value={current} onChange={(e) => isLang(e.target.value) && updateSettings({ language: e.target.value })} className="field">
+        {(Object.keys(LANGS) as (keyof typeof LANGS)[]).map((l) => (
+          <option key={l} value={l} lang={l}>{LANGS[l]}</option>
+        ))}
+      </select>
+      <p className="mt-2 text-sm text-muted">{t('settings.languageNote')}</p>
+    </Card>
+  );
+}
+
+function CountryCard() {
+  const { settings, updateSettings } = useStore();
+  const tr = useT();
+  const { t } = tr;
+  const current = settings.helplineCountry ?? detectCountry();
+  const options = [...HELPLINES].sort((a, b) => tr.country(a.code).localeCompare(tr.country(b.code), tr.locale));
+  return (
+    <Card title={t('settings.country')} id="set-country">
+      <label className="sr-only" htmlFor="country-select">{t('settings.country')}</label>
+      <select id="country-select" value={current} onChange={(e) => updateSettings({ helplineCountry: e.target.value || DEFAULT_COUNTRY })} className="field">
+        {options.map((h) => (
+          <option key={h.code} value={h.code}>{tr.country(h.code)}</option>
+        ))}
+        <option value={OTHER_COUNTRY}>{t('help.otherCountry')}</option>
+      </select>
+      <p className="mt-2 text-sm text-muted">{t('settings.countryNote')}</p>
+    </Card>
+  );
+}
+
+function TagsCard() {
+  const { settings, updateSettings } = useStore();
+  const { t } = useT();
+  const tags = settings.customTags ?? emptyTags();
+  const any = CONTEXT_GROUPS.some((g) => tags[g].length);
+  const remove = (g: (typeof CONTEXT_GROUPS)[number], tag: string) => updateSettings({ customTags: { ...tags, [g]: tags[g].filter((x) => x !== tag) } });
+  return (
+    <Card title={t('settings.tags')} id="set-tags">
+      <p className="mb-3 text-sm text-muted">{any ? t('settings.tagsIntro') : t('settings.tagsNone')}</p>
+      {CONTEXT_GROUPS.filter((g) => tags[g].length).map((g) => (
+        <div key={g} className="mb-3">
+          <h4 className="eyebrow mb-1">{t(`ctx.${g}`)}</h4>
+          <ul className="flex flex-wrap gap-2">
+            {tags[g].map((tag) => (
+              <li key={tag}>
+                <button type="button" className="chip" onClick={() => remove(g, tag)} aria-label={t('settings.removeTag', { tag })}>
+                  {tag} <Icon name="close" size={14} stroke={3} />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </Card>
   );
 }

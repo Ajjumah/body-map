@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useT } from '../i18n';
 import { verifyPin } from '../lib/pin';
 import { useStore } from '../store';
 import ConfirmDialog from './ConfirmDialog';
@@ -9,6 +10,7 @@ const WAIT_SECS = 30;
 
 export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
   const { settings, deleteAll } = useStore();
+  const { t } = useT();
   const [pin, setPin] = useState('');
   const [msg, setMsg] = useState('');
   const [tries, setTries] = useState(0);
@@ -33,33 +35,33 @@ export default function LockScreen({ onUnlock }: { onUnlock: () => void }) {
     if (n % MAX_TRIES === 0) {
       setWaitUntil(Date.now() + WAIT_SECS * 1000);
       setNow(Date.now());
-      setMsg(`Let’s pause for ${WAIT_SECS} seconds before trying again.`);
-    } else setMsg('That PIN didn’t match. Try again.');
+      setMsg(t('lock.pause', { n: WAIT_SECS }));
+    } else setMsg(t('lock.wrong'));
   };
 
   return (
     <main className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-6 overflow-y-auto bg-bg p-6">
       <div className="text-center">
-        <h1 className="text-3xl text-ink">Body Map is resting</h1>
-        <p className="text-muted">Enter your PIN to come in.</p>
+        <h1 className="text-3xl text-ink">{t('lock.title')}</h1>
+        <p className="text-muted">{t('lock.intro')}</p>
       </div>
-      <PinPad value={pin} onChange={setPin} onSubmit={submit} label="PIN" disabled={waiting} />
+      <PinPad value={pin} onChange={setPin} onSubmit={submit} label={t('pin.label')} disabled={waiting} />
       <p role="alert" className="min-h-6 text-center text-warn">
-        {waiting ? `Try again in ${Math.ceil((waitUntil - now) / 1000)}s.` : msg}
+        {waiting ? t('lock.wait', { n: Math.ceil((waitUntil - now) / 1000) }) : msg}
       </p>
-      <button type="button" onClick={() => setForgot(true)} className="min-h-11 text-sm text-muted underline">Forgot PIN?</button>
+      <button type="button" onClick={() => setForgot(true)} className="min-h-11 text-sm text-muted underline">{t('lock.forgot')}</button>
       {forgot && (
         <ConfirmDialog
-          title="Reset the app?"
-          confirmLabel="Delete everything"
-          typeToConfirm="DELETE"
+          title={t('lock.resetTitle')}
+          confirmLabel={t('data.deleteButton')}
+          typeToConfirm={t('common.deleteWord')}
           onCancel={() => setForgot(false)}
           onConfirm={async () => {
             await deleteAll();
             onUnlock();
           }}
         >
-          Your PIN can’t be recovered, because nothing leaves this device. The only way in is to delete all data on this device and start fresh. If you have an exported backup, you can import it afterwards.
+          {t('lock.resetBody')}
         </ConfirmDialog>
       )}
     </main>

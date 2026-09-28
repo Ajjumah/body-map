@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useT } from '../i18n';
 import { applyFilters, type Filters as F } from '../lib/insights';
 import { useStore } from '../store';
 import { Segmented } from './BodyMapScreen';
@@ -11,6 +12,7 @@ type Tab = 'timeline' | 'heatmap';
 
 export default function HistoryScreen({ route }: { route: string[] }) {
   const { sessions, entries } = useStore();
+  const { t } = useT();
   const tab: Tab = route[1] === 'heatmap' ? 'heatmap' : 'timeline';
   const [filters, setFilters] = useState<F>({ range: 'all' });
   const filtered = useMemo(() => applyFilters(entries, filters), [entries, filters]);
@@ -19,12 +21,12 @@ export default function HistoryScreen({ route }: { route: string[] }) {
   return (
     <section aria-labelledby="history-title" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="history-title" className="text-3xl text-ink">Memories</h2>
+        <h2 id="history-title" className="text-3xl text-ink">{t('history.title')}</h2>
         <Segmented<Tab>
           value={tab}
           onChange={(t) => (location.hash = t === 'heatmap' ? '#/history/heatmap' : '#/history')}
-          label="History view"
-          options={[['timeline', 'Timeline'], ['heatmap', 'Body heatmap']]}
+          label={t('history.view')}
+          options={[['timeline', t('history.timeline')], ['heatmap', t('history.heatmap')]]}
         />
       </div>
       <Filters value={filters} onChange={setFilters} />

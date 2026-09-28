@@ -6,7 +6,8 @@ import EntryList from '../components/EntryList';
 import Icon from '../components/Icon';
 import RegionList from '../components/RegionList';
 import SessionSummary from '../components/SessionSummary';
-import { regionLabel, regionView, type View } from '../data/regions';
+import { regionView, type View } from '../data/regions';
+import { useT } from '../i18n';
 import { regionFills } from '../lib/fills';
 import { useWorld } from '../lib/useWorld';
 import { useStore, type EntryDraft } from '../store';
@@ -20,15 +21,17 @@ export default function BodyMapScreen() {
   const [open, setOpen] = useState<RegionId | null>(null);
   const [toast, setToast] = useState('');
   const world = useWorld();
+  const tr = useT();
+  const { t } = tr;
 
-  const fills = useMemo(() => regionFills(currentEntries, emotionById, imageUrl), [currentEntries, emotionById, imageUrl]);
+  const fills = useMemo(() => regionFills(currentEntries, emotionById, imageUrl, tr), [currentEntries, emotionById, imageUrl, tr]);
   const wholeBody = currentEntries.filter((e) => e.regionId === 'whole.body');
   const otherSide = currentEntries.filter((e) => regionView(e.regionId) === (view === 'front' ? 'back' : 'front')).length;
 
   const save = async (d: EntryDraft) => {
     await addEntry(d);
     setOpen(null);
-    setToast(`Kept safe: ${regionLabel(d.regionId)}`);
+    setToast(t('map.keptSafe', { region: tr.region(d.regionId) }));
     setTimeout(() => setToast(''), 2500);
   };
 
@@ -43,23 +46,23 @@ export default function BodyMapScreen() {
   if (summaryId) return <SessionSummary sessionId={summaryId} onDone={() => setSummaryId(null)} />;
 
   return (
-    <section aria-label="Body map" className="flex flex-col items-center gap-3">
+    <section aria-label={t('map.label')} className="flex flex-col items-center gap-3">
       <div className="flex w-full items-center gap-3">
         <Buddy world={world} size={64} className="bob shrink-0" />
         <SpeechBubble>
-          {currentEntries.length ? 'Thank you for sharing. Anywhere else you notice something?' : 'Hi friend! Where in your body do you feel something right now?'}
+          {t(currentEntries.length ? 'map.greetingMore' : 'map.greeting')}
         </SpeechBubble>
       </div>
       <div className="flex w-full flex-wrap items-center justify-between gap-2">
-        <Segmented value={view} onChange={setView} options={[['front', 'Front'], ['back', 'Back']]} label="Body side" />
+        <Segmented value={view} onChange={setView} options={[['front', t('common.front')], ['back', t('common.back')]]} label={t('common.bodySide')} />
         <button type="button" onClick={() => setListMode((v) => !v)} aria-pressed={listMode} className="btn">
           <Icon name={listMode ? 'figure' : 'list'} size={18} />
-          {listMode ? 'Figure' : 'List'}
+          {t(listMode ? 'map.figure' : 'map.list')}
         </button>
       </div>
       {otherSide > 0 && (
         <p className="text-sm text-muted">
-          {otherSide} {otherSide === 1 ? 'feeling' : 'feelings'} on the {view === 'front' ? 'back' : 'front'}
+          {tr.tn('map.otherSide', otherSide, { side: t(view === 'front' ? 'map.sideBack' : 'map.sideFront') })}
         </p>
       )}
       {listMode ? (
@@ -75,11 +78,11 @@ export default function BodyMapScreen() {
           />
           <button type="button" onClick={() => setOpen('whole.body')} className="btn">
             <Icon name="sparkle" size={18} />
-            All over / everywhere
+            {t('map.allOver')}
             {wholeBody.length > 0 && (
               <span className="rounded-full border-2 border-outline bg-accent-2 px-2 text-sm">
-                {wholeBody.length}
-                <span className="sr-only"> {wholeBody.length === 1 ? 'feeling' : 'feelings'}</span>
+                <span aria-hidden="true">{wholeBody.length}</span>
+                <span className="sr-only">{tr.tn('map.feelings', wholeBody.length)}</span>
               </span>
             )}
           </button>
@@ -89,13 +92,13 @@ export default function BodyMapScreen() {
       {currentEntries.length > 0 && (
         <div className="z-20 w-full max-w-sm [@media(min-height:640px)]:sticky [@media(min-height:640px)]:bottom-28">
           <button type="button" onClick={finish} className="btn btn-primary btn-big w-full">
-            I’m done for now ({currentEntries.length})
+            {t('map.done', { n: currentEntries.length })}
           </button>
         </div>
       )}
       {currentEntries.length > 0 && (
         <details className="w-full">
-          <summary className="flex min-h-11 cursor-pointer items-center font-bold text-muted">What I’ve shared so far</summary>
+          <summary className="flex min-h-11 cursor-pointer items-center font-bold text-muted">{t('map.sharedSoFar')}</summary>
           <EntryList entries={currentEntries} onRemove={removeEntry} />
         </details>
       )}

@@ -1,21 +1,23 @@
 import EmotionIcon from '../components/EmotionIcon';
-import { fmtDate, fmtTime } from '../lib/format';
+import { useT } from '../i18n';
 import { useStore } from '../store';
 import type { Entry, Session } from '../types';
 
 export default function Timeline({ sessions, entries }: { sessions: Session[]; entries: Entry[] }) {
   const { emotionById } = useStore();
+  const tr = useT();
+  const { t } = tr;
   const bySession = new Map<string, Entry[]>();
   for (const e of entries) {
     if (!bySession.has(e.sessionId)) bySession.set(e.sessionId, []);
     bySession.get(e.sessionId)!.push(e);
   }
   const list = sessions.filter((s) => bySession.has(s.id)).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
-  if (!list.length) return <p className="py-8 text-center text-muted">Nothing here yet. Check-ins you finish will show up here.</p>;
+  if (!list.length) return <p className="py-8 text-center text-muted">{t('history.empty')}</p>;
 
   const days = new Map<string, Session[]>();
   for (const s of list) {
-    const d = fmtDate(s.startedAt);
+    const d = tr.date(s.startedAt);
     if (!days.has(d)) days.set(d, []);
     days.get(d)!.push(s);
   }
@@ -35,14 +37,14 @@ export default function Timeline({ sessions, entries }: { sessions: Session[]; e
                   <a href={`#/history/session/${s.id}`} className="flex min-h-16 items-center justify-between gap-3 card block p-3 transition-transform hover:-translate-y-0.5">
                     <div className="min-w-0">
                       <p className="font-display text-xl text-ink">
-                        {fmtTime(s.startedAt)}
-                        {!s.finishedAt && <span className="ml-2 rounded-full border-2 border-outline bg-accent-2 px-2 py-0.5 font-sans text-xs">in progress</span>}
+                        {tr.time(s.startedAt)}
+                        {!s.finishedAt && <span className="ml-2 rounded-full border-2 border-outline bg-accent-2 px-2 py-0.5 font-sans text-xs">{t('history.inProgress')}</span>}
                       </p>
                       <p className="text-sm text-muted">
-                        {es.length} {es.length === 1 ? 'entry' : 'entries'} · strongest {maxI}/10
-                        {s.overallMood !== undefined && ` · mood ${s.overallMood}/10`}
+                        {tr.tn('history.entries', es.length)} · {t('history.strongest', { n: maxI })}
+                        {s.overallMood !== undefined && ` · ${t('history.mood', { n: s.overallMood })}`}
                       </p>
-                      <p className="truncate text-sm text-muted">{emoIds.map((id) => emotionById.get(id)?.label ?? 'Unknown').join(', ')}</p>
+                      <p className="truncate text-sm text-muted">{emoIds.map((id) => tr.emotion(emotionById.get(id))).join(', ')}</p>
                     </div>
                     <div className="flex shrink-0 -space-x-1" aria-hidden="true">
                       {emoIds.slice(0, 4).map((id) => (

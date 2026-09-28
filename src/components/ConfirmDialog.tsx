@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useT } from '../i18n';
 
 type Props = {
   title: string;
@@ -12,6 +13,7 @@ type Props = {
 
 export default function ConfirmDialog({ title, children, confirmLabel, typeToConfirm, onConfirm, onCancel }: Props) {
   const [typed, setTyped] = useState('');
+  const { t } = useT();
   const cancelRef = useRef<HTMLButtonElement>(null);
   const cancelFn = useRef(onCancel);
   cancelFn.current = onCancel;
@@ -30,13 +32,13 @@ export default function ConfirmDialog({ title, children, confirmLabel, typeToCon
         <div id="cd-body" className="mb-4 text-ink">{children}</div>
         {typeToConfirm && (
           <label className="mb-4 block text-sm text-muted">
-            Type <strong className="text-ink">{typeToConfirm}</strong> to confirm
+            {t('common.typeToConfirm', { word: typeToConfirm })}
             <input value={typed} onChange={(e) => setTyped(e.target.value)} autoComplete="off" className="field mt-1" />
           </label>
         )}
         <div className="flex justify-end gap-2">
           <button ref={cancelRef} type="button" onClick={onCancel} className="btn">
-            Cancel
+            {t('common.cancel')}
           </button>
           <button type="button" disabled={!ok} onClick={onConfirm} className="btn btn-danger">
             {confirmLabel}

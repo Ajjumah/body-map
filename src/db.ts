@@ -1,9 +1,17 @@
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import type { ContextTags } from './data/context';
+import type { Lang } from './i18n';
 import { DEFAULT_THEME, normalizeTheme, type ThemeSetting } from './lib/world';
 import type { Emotion, Entry, ImageRecord, Session } from './types';
 
 export type Settings = {
   theme: ThemeSetting;
+  /** Unset means "follow the browser". */
+  language?: Lang;
+  /** ISO country code for the Help screen, or OTHER. Unset means "guess from the browser". */
+  helplineCountry?: string;
+  /** The person's own context tags (without the custom prefix). */
+  customTags?: ContextTags;
   supportName?: string;
   supportContact?: string;
   pinHash?: string;

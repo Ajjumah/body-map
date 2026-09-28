@@ -1,14 +1,17 @@
 import { useState } from 'react';
-import { fmtDate, fmtTime } from '../lib/format';
+import { emptyTags, type ContextTags } from '../data/context';
+import { useT } from '../i18n';
 import { useWorld } from '../lib/useWorld';
 import { useStore } from '../store';
 import Buddy from './Buddy';
+import ContextPicker from './ContextPicker';
 import EntryList from './EntryList';
 import Icon from './Icon';
 import StarScale, { ScaleValue } from './StarScale';
 import Grounding, { pickGrounding } from './Grounding';
 import MiniBody from './MiniBody';
 
+/** Stored markers inside Session.reflection. Kept in English so saved data is language-independent. */
 export const PROMPT_CAUSE = 'What might have brought this on?';
 export const PROMPT_HELP = 'What might help right now?';
 
@@ -39,13 +42,17 @@ export default function SessionSummary({ sessionId, onDone }: { sessionId: strin
   const [cause, setCause] = useState(initCause);
   const [help, setHelp] = useState(initHelp);
   const [showGrounding, setShowGrounding] = useState(true);
+  const [context, setContext] = useState<ContextTags>(session?.context ?? emptyTags());
+  const tr = useT();
+  const { t } = tr;
   const grounding = pickGrounding(list, emotionById);
   const world = useWorld();
 
   if (!session) return null;
 
   const done = async () => {
-    await updateSession(session.id, { overallMood: mood, reflection: joinReflection(cause, help) });
+    const hasContext = context.doing.length + context.with.length + context.where.length > 0;
+    await updateSession(session.id, { overallMood: mood, reflection: joinReflection(cause, help), context: hasContext ? context : undefined });
     onDone();
   };
 
@@ -54,9 +61,9 @@ export default function SessionSummary({ sessionId, onDone }: { sessionId: strin
       <div className="flex items-center gap-3">
         <Buddy world={world} size={72} className="bob shrink-0" />
         <div>
-          <h2 id="summary-title" className="text-3xl text-ink">Thank you for listening to you</h2>
+          <h2 id="summary-title" className="text-3xl text-ink">{t('summary.title')}</h2>
           <p className="text-muted">
-            {fmtDate(session.startedAt)}, {fmtTime(session.startedAt)} · {list.length} {list.length === 1 ? 'feeling' : 'feelings'} found
+            {tr.tn('summary.meta', list.length, { date: tr.date(session.startedAt), time: tr.time(session.startedAt) })}
           </p>
         </div>
       </div>
@@ -64,40 +71,42 @@ export default function SessionSummary({ sessionId, onDone }: { sessionId: strin
       {showGrounding && grounding && <Grounding kind={grounding} onDismiss={() => setShowGrounding(false)} />}
 
       <div className="card p-4">
-        <h3 className="mb-2 text-center text-xl text-ink">Your body map today</h3>
+        <h3 className="mb-2 text-center text-xl text-ink">{t('summary.bodyToday')}</h3>
         <MiniBody entries={list} />
       </div>
 
       <EntryList entries={list} />
 
+      <ContextPicker value={context} onChange={setContext} />
+
       <div className="card p-4">
         <div className="mb-4">
           {mood === undefined ? (
             <button type="button" onClick={() => setMood(5)} className="btn">
-              <Icon name="sparkle" size={18} /> How am I overall? <span className="font-semibold text-muted">(if you like)</span>
+              <Icon name="sparkle" size={18} /> {t('summary.moodButton')} <span className="font-semibold text-muted">{t('common.optional')}</span>
             </button>
           ) : (
             <>
               <div className="mb-2 flex items-center justify-between">
-                <label htmlFor="mood" className="text-lg font-bold text-ink">Overall, how are you right now?</label>
+                <label htmlFor="mood" className="text-lg font-bold text-ink">{t('summary.moodLabel')}</label>
                 <ScaleValue value={mood} />
               </div>
-              <StarScale id="mood" value={mood} onChange={setMood} low="Really low" high="Really good" />
+              <StarScale id="mood" value={mood} onChange={setMood} low={t('summary.moodLow')} high={t('summary.moodHigh')} />
               <button type="button" onClick={() => setMood(undefined)} className="mt-1 min-h-11 text-sm text-muted underline">
-                Clear mood
+                {t('summary.clearMood')}
               </button>
             </>
           )}
         </div>
-        <label htmlFor="cause" className="mb-1 flex items-center gap-2 text-lg font-bold text-ink"><Icon name="pencil" size={18} />{PROMPT_CAUSE}</label>
+        <label htmlFor="cause" className="mb-1 flex items-center gap-2 text-lg font-bold text-ink"><Icon name="pencil" size={18} />{t('summary.promptCause')}</label>
         <textarea id="cause" rows={2} value={cause} onChange={(e) => setCause(e.target.value)} className="mb-3 field" />
-        <label htmlFor="help" className="mb-1 flex items-center gap-2 text-lg font-bold text-ink"><Icon name="pencil" size={18} />{PROMPT_HELP}</label>
-        <textarea id="help" rows={2} value={help} onChange={(e) => setHelp(e.target.value)} placeholder="A hug, some water, a song…" className="field" />
-        <p className="mt-2 text-sm text-muted">Both are optional. You can leave them empty.</p>
+        <label htmlFor="help" className="mb-1 flex items-center gap-2 text-lg font-bold text-ink"><Icon name="pencil" size={18} />{t('summary.promptHelp')}</label>
+        <textarea id="help" rows={2} value={help} onChange={(e) => setHelp(e.target.value)} placeholder={t('summary.helpPlaceholder')} className="field" />
+        <p className="mt-2 text-sm text-muted">{t('summary.bothOptional')}</p>
       </div>
 
       <button type="button" onClick={done} className="btn btn-primary btn-big">
-        All done
+        {t('summary.done')}
       </button>
     </section>
   );

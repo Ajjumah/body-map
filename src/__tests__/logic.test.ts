@@ -7,6 +7,7 @@ import { entriesCsv, parseBackup, toBackup } from '../lib/backup';
 import { applyFilters, dailyIntensity, regionCounts, topEmotions } from '../lib/insights';
 import { hashPin, isValidPin, verifyPin } from '../lib/pin';
 import { joinReflection, splitReflection } from '../components/SessionSummary';
+import { makeT } from '../i18n';
 import type { Entry } from '../types';
 
 const entry = (over: Partial<Entry>): Entry => ({
@@ -87,7 +88,7 @@ describe('pin', () => {
 
 describe('csv', () => {
   it('quotes cells and neutralises formulas', () => {
-    const csv = entriesCsv([entry({ note: '=HYPERLINK("x") "quoted", comma' })], [{ id: 's1', startedAt: new Date().toISOString() }], new Map());
+    const csv = entriesCsv([entry({ note: '=HYPERLINK("x") "quoted", comma' })], [{ id: 's1', startedAt: new Date().toISOString() }], new Map(), makeT('en'));
     expect(csv).toContain(`"'=HYPERLINK(""x"") ""quoted"", comma"`);
     expect(csv.split('\r\n')[0]).toMatch(/^date,time,session_id/);
   });
@@ -131,8 +132,8 @@ describe('backup round trip (IndexedDB)', () => {
   });
 
   it('rejects files that are not backups', () => {
-    expect(() => parseBackup('nope', { theme: 'sticker' })).toThrow(/valid JSON/);
-    expect(() => parseBackup('{"a":1}', { theme: 'sticker' })).toThrow(/Body Map backup/);
+    expect(() => parseBackup('nope', { theme: 'sticker' })).toThrow('errJson');
+    expect(() => parseBackup('{"a":1}', { theme: 'sticker' })).toThrow('errFormat');
   });
 });
 
@@ -157,5 +158,70 @@ describe('worlds', () => {
   it('normalises a legacy theme in an imported backup', () => {
     const b = JSON.stringify({ format: 'body-map-backup', version: 1, emotions: [], sessions: [], entries: [], images: [], settings: { theme: 'dark' } });
     expect(parseBackup(b, { theme: 'sticker' }).settings.theme).toBe('starlight');
+  });
+});
+
+describe('translations', async () => {
+  const { default: enDict } = await import('../i18n/en');
+  const langs = { af: (await import('../i18n/af')).default, zu: (await import('../i18n/zu')).default, xh: (await import('../i18n/xh')).default, es: (await import('../i18n/es')).default, fr: (await import('../i18n/fr')).default, pt: (await import('../i18n/pt')).default };
+  const holes = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+
+  for (const [code, dict] of Object.entries(langs)) {
+    it(`${code} has every key, nothing extra, and keeps placeholders`, () => {
+      expect(Object.keys(dict).sort()).toEqual(Object.keys(enDict).sort());
+      for (const [k, v] of Object.entries(enDict)) {
+        const tr = (dict as Record<string, string>)[k];
+        expect(tr.trim(), `${code}:${k} is empty`).not.toBe('');
+        // Singular forms may drop {n} ("once"); everything else must keep every placeholder.
+        const want = k.endsWith('.one') ? holes(v).filter((h) => h !== 'n') : holes(v);
+        for (const h of want) expect(holes(tr), `${code}:${k} lost {${h}}`).toContain(h);
+        for (const h of holes(tr)) expect(holes(v), `${code}:${k} has unknown {${h}}`).toContain(h);
+      }
+    });
+  }
+
+  it('translates default emotions, keeps renamed ones, and plural-picks', async () => {
+    const { makeT, detectLang } = await import('../i18n');
+    const tr = makeT('af');
+    const anxious = DEFAULT_EMOTIONS.find((e) => e.id === 'default.anxious')!;
+    expect(tr.emotion(anxious)).toBe('Angstig');
+    expect(tr.emotion({ ...anxious, label: 'My own name' })).toBe('My own name');
+    expect(tr.tn('map.feelings', 1)).toBe('1 gevoel');
+    expect(tr.tn('map.feelings', 3)).toBe('3 gevoelens');
+    expect(tr.region('front.heart')).toBe('Hartstreek');
+    expect(detectLang(['zu-ZA', 'en'])).toBe('zu');
+    expect(detectLang(['de-DE'])).toBe('en');
+  });
+});
+
+describe('helplines', async () => {
+  const { HELPLINES, detectCountry, helpFor } = await import('../data/helplines');
+  it('lists dialable numbers for each country', () => {
+    for (const h of HELPLINES) {
+      expect(h.code).toMatch(/^[A-Z]{2}$/);
+      expect(h.lines.length).toBeGreaterThan(0);
+      for (const l of h.lines) expect(l.tel).toMatch(/^\d{3,12}$/);
+      expect(h.emergency).toMatch(/^\d{3}/);
+    }
+    expect(helpFor('ZA')!.lines[0].number).toBe('0800 567 567');
+  });
+  it('guesses the country from time zone, then language, defaulting to South Africa', () => {
+    expect(detectCountry(['en-US'], 'Africa/Johannesburg')).toBe('ZA');
+    expect(detectCountry(['en-US'], 'Australia/Sydney')).toBe('AU');
+    expect(detectCountry(['en-GB'], 'Europe/Berlin')).toBe('GB');
+    expect(detectCountry(['pt-BR'], 'UTC')).toBe('BR');
+    expect(detectCountry(['de-DE', 'en'], 'Europe/Berlin')).toBe('ZA');
+  });
+});
+
+describe('feeling colours', () => {
+  it('keeps dark text readable (≥4.5:1) on every default feeling colour', () => {
+    const lin = (c: number) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+    const lum = (h: string) => {
+      const [r, g, b] = [1, 3, 5].map((i) => lin(parseInt(h.slice(i, i + 2), 16)));
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const ink = lum('#2b2b3a');
+    for (const e of DEFAULT_EMOTIONS) expect((lum(e.color) + 0.05) / (ink + 0.05), e.label).toBeGreaterThanOrEqual(4.5);
   });
 });

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import Backdrop from './components/Backdrop';
 import Icon, { type IconName } from './components/Icon';
 import LockScreen from './components/LockScreen';
+import { LOCALE, useT } from './i18n';
+import type { Key } from './i18n/en';
 import { useRoute } from './lib/route';
 import { useWorld } from './lib/useWorld';
 import { WORLDS, type World } from './lib/world';
@@ -12,11 +14,11 @@ import SettingsScreen from './screens/SettingsScreen';
 import { StoreProvider, useStore } from './store';
 
 export type Screen = 'map' | 'history' | 'settings' | 'help';
-const SCREENS: { id: Screen; label: string; icon: IconName }[] = [
-  { id: 'map', label: 'Body', icon: 'body' },
-  { id: 'history', label: 'Memories', icon: 'memories' },
-  { id: 'settings', label: 'Settings', icon: 'settings' },
-  { id: 'help', label: 'Help', icon: 'help' },
+const SCREENS: { id: Screen; label: Key; icon: IconName }[] = [
+  { id: 'map', label: 'nav.body', icon: 'body' },
+  { id: 'history', label: 'nav.memories', icon: 'memories' },
+  { id: 'settings', label: 'nav.settings', icon: 'settings' },
+  { id: 'help', label: 'nav.help', icon: 'help' },
 ];
 
 export default function App() {
@@ -30,6 +32,8 @@ export default function App() {
 function Shell() {
   const { ready, settings } = useStore();
   const world = useWorld();
+  const tr = useT();
+  const { t } = tr;
   const route = useRoute();
   const screen: Screen = SCREENS.some((s) => s.id === route[0]) ? (route[0] as Screen) : 'map';
   useApplyWorld(world);
@@ -38,8 +42,9 @@ function Shell() {
     window.scrollTo(0, 0);
   }, [route.join('/')]);
   useEffect(() => {
-    document.title = `${SCREENS.find((s) => s.id === screen)!.label} · Body Map`;
-  }, [screen]);
+    document.title = `${t(SCREENS.find((s) => s.id === screen)!.label)} · ${t('app.name')}`;
+    document.documentElement.lang = LOCALE[tr.lang];
+  }, [screen, t, tr.lang]);
 
   if (locked)
     return (
@@ -52,13 +57,13 @@ function Shell() {
   return (
     <div className="mx-auto flex min-h-dvh max-w-5xl flex-col">
       <Backdrop world={world} />
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2 on-surface">Skip to content</a>
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-full focus:bg-surface focus:px-4 focus:py-2 on-surface">{t('app.skip')}</a>
       <header className="flex items-center justify-between px-4 pt-3 pb-1">
-        <h1 className="text-3xl text-ink">Body Map</h1>
+        <h1 className="text-3xl text-ink">{t('app.name')}</h1>
       </header>
       <main id="main" tabIndex={-1} className="flex-1 px-4 pb-32 outline-none">
         {!ready ? (
-          <p className="py-10 text-center text-muted">Loading…</p>
+          <p className="py-10 text-center text-muted">{t('app.loading')}</p>
         ) : screen === 'map' ? (
           <BodyMapScreen />
         ) : screen === 'history' ? (
@@ -69,7 +74,7 @@ function Shell() {
           <HelpScreen />
         )}
       </main>
-      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <nav aria-label={t('nav.main')} className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
         <ul className="card on-surface mx-auto flex max-w-lg gap-1.5 p-1.5">
           {SCREENS.map((s) => {
             const on = screen === s.id;
@@ -81,7 +86,7 @@ function Shell() {
                   className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-2xl border-3 text-xs font-bold text-ink ${on ? 'border-outline bg-accent-2' : 'border-transparent'}`}
                 >
                   <Icon name={s.icon} />
-                  {s.label}
+                  {t(s.label)}
                 </a>
               </li>
             );

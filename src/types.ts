@@ -29,6 +29,8 @@ export type Session = {
   finishedAt?: string;
   overallMood?: number;
   reflection?: string;
+  /** Context tag ids: built-in ids, or custom ones prefixed "c:". */
+  context?: { doing: string[]; with: string[]; where: string[] };
 };
 
 export type ImageRecord = { id: string; blob: Blob; createdAt: string };

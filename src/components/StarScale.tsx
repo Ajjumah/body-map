@@ -1,7 +1,9 @@
+import { useT } from '../i18n';
 import { sparklePath } from './Icon';
 
 /** 1–10 picker drawn as stars over a real (invisible) range input, so keyboard and screen readers work as usual. */
 export default function StarScale({ id, value, onChange, low, high }: { id: string; value: number; onChange: (n: number) => void; low: string; high: string }) {
+  const { t } = useT();
   return (
     <div>
       <div className="relative flex h-11 items-center justify-between rounded-2xl px-0.5 has-[:focus-visible]:outline-3 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--ring-inner)]">
@@ -18,7 +20,7 @@ export default function StarScale({ id, value, onChange, low, high }: { id: stri
           step={1}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          aria-valuetext={`${value} of 10`}
+          aria-valuetext={t('common.outOf10', { n: value })}
           className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
       </div>

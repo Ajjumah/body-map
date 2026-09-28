@@ -1,4 +1,5 @@
 import { orderedRegions, WHOLE_BODY, type View } from '../data/regions';
+import { useT } from '../i18n';
 import type { RegionId } from '../types';
 import type { RegionFill } from './BodyFigure';
 
@@ -10,8 +11,9 @@ type Props = {
 
 export default function RegionList({ view, fills, onSelect }: Props) {
   const regions = [...orderedRegions(view), WHOLE_BODY];
+  const tr = useT();
   return (
-    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label={`Body regions, ${view} view`}>
+    <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-label={tr.t('figure.regionsList', { side: tr.t(view === 'front' ? 'map.sideFront' : 'map.sideBack') })}>
       {regions.map((r) => {
         const f = fills?.get(r.id);
         return (
@@ -23,7 +25,7 @@ export default function RegionList({ view, fills, onSelect }: Props) {
             >
               <span className="flex items-center gap-2">
                 {f && <span aria-hidden="true" className="inline-block size-4 rounded-full border-2 border-outline" style={{ background: f.color }} />}
-                {r.label}
+                {tr.region(r.id)}
               </span>
               {f && (
                 <span className="text-sm text-muted">

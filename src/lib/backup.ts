@@ -1,10 +1,21 @@
 import type { Settings, Snapshot } from '../db';
-import { regionLabel } from '../data/regions';
+import { CONTEXT_GROUPS, type ContextGroup } from '../data/context';
+import { isLang, type T } from '../i18n';
 import type { Emotion, Entry, Session } from '../types';
 import { blobToDataUrl, dataUrlToBlob } from './image';
 import { normalizeTheme } from './world';
 
 export const BACKUP_FORMAT = 'body-map-backup';
+
+export type BackupErrorCode = 'errJson' | 'errFormat' | 'errVersion' | 'errMissing' | 'errMalformed';
+
+/** Import failure with a code the UI turns into a translated message. */
+export class BackupError extends Error {
+  constructor(public code: BackupErrorCode) {
+    super(code);
+    this.name = 'BackupError';
+  }
+}
 
 export type BackupFile = {
   format: typeof BACKUP_FORMAT;
@@ -42,21 +53,21 @@ export function parseBackup(text: string, keepSettings: Settings): Snapshot {
   try {
     raw = JSON.parse(text);
   } catch {
-    throw new Error('That file isn’t valid JSON.');
+    throw new BackupError('errJson');
   }
   const b = raw as Partial<BackupFile>;
-  if (!b || b.format !== BACKUP_FORMAT) throw new Error('That file doesn’t look like a Body Map backup.');
-  if (b.version !== 1) throw new Error(`Unsupported backup version: ${String(b.version)}`);
-  if (!isArr(b.emotions) || !isArr(b.sessions) || !isArr(b.entries) || !isArr(b.images)) throw new Error('The backup is missing some data.');
-  for (const e of b.emotions) if (!isStr(e?.id) || !isStr(e.label) || !isStr(e.color)) throw new Error('A feeling in the backup is malformed.');
-  for (const s of b.sessions) if (!isStr(s?.id) || !isStr(s.startedAt)) throw new Error('A check-in in the backup is malformed.');
+  if (!b || b.format !== BACKUP_FORMAT) throw new BackupError('errFormat');
+  if (b.version !== 1) throw new BackupError('errVersion');
+  if (!isArr(b.emotions) || !isArr(b.sessions) || !isArr(b.entries) || !isArr(b.images)) throw new BackupError('errMissing');
+  for (const e of b.emotions) if (!isStr(e?.id) || !isStr(e.label) || !isStr(e.color)) throw new BackupError('errMalformed');
+  for (const s of b.sessions) if (!isStr(s?.id) || !isStr(s.startedAt)) throw new BackupError('errMalformed');
   for (const e of b.entries) {
     if (!isStr(e?.id) || !isStr(e.sessionId) || !isStr(e.regionId) || !isArr(e.emotionIds) || typeof e.intensity !== 'number' || !isStr(e.createdAt))
-      throw new Error('An entry in the backup is malformed.');
+      throw new BackupError('errMalformed');
     if (!isArr(e.sensations)) e.sensations = [];
   }
   const images = b.images.map((i) => {
-    if (!isStr(i?.id) || !isStr(i.dataUrl)) throw new Error('An image in the backup is malformed.');
+    if (!isStr(i?.id) || !isStr(i.dataUrl)) throw new BackupError('errMalformed');
     return { id: i.id, createdAt: i.createdAt ?? new Date().toISOString(), blob: dataUrlToBlob(i.dataUrl) };
   });
   const emotions = b.emotions.map((e, i) => ({ ...e, order: typeof e.order === 'number' ? e.order : i, archived: !!e.archived, isDefault: !!e.isDefault }));
@@ -66,7 +77,13 @@ export function parseBackup(text: string, keepSettings: Settings): Snapshot {
     entries: b.entries,
     images,
     // Keep this device's PIN; take everything else from the file.
-    settings: { ...(b.settings ?? {}), theme: normalizeTheme(b.settings?.theme), pinHash: keepSettings.pinHash, pinSalt: keepSettings.pinSalt },
+    settings: {
+      ...(b.settings ?? {}),
+      theme: normalizeTheme(b.settings?.theme),
+      language: isLang(b.settings?.language) ? b.settings.language : undefined,
+      pinHash: keepSettings.pinHash,
+      pinSalt: keepSettings.pinSalt,
+    },
     currentSessionId: b.currentSessionId,
   };
 }
@@ -78,9 +95,12 @@ function csvCell(v: string | number | undefined) {
   return `"${safe.replace(/"/g, '""')}"`;
 }
 
-export function entriesCsv(entries: Entry[], sessions: Session[], emotionById: Map<string, Emotion>): string {
+/** Entries as CSV, with labels in the current language (ids are included too, for tools). */
+export function entriesCsv(entries: Entry[], sessions: Session[], emotionById: Map<string, Emotion>, tr: T): string {
   const sById = new Map(sessions.map((s) => [s.id, s]));
-  const header = ['date', 'time', 'session_id', 'region_id', 'region', 'emotions', 'sensations', 'intensity', 'note', 'session_overall_mood', 'session_reflection'];
+  const header = ['date', 'time', 'session_id', 'region_id', 'region', 'emotions', 'sensations', 'intensity', 'note', 'session_overall_mood', 'session_reflection', 'session_doing', 'session_with', 'session_where'];
+  const ctx = (s: Session | undefined, g: ContextGroup) =>
+    (s?.context?.[g] ?? []).map((id) => (id.startsWith('c:') ? id.slice(2) : tr.dyn(`ctx.${g}.${id}`, id))).join('; ');
   const rows = [...entries]
     .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
     .map((e) => {
@@ -91,13 +111,14 @@ export function entriesCsv(entries: Entry[], sessions: Session[], emotionById: M
         d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
         e.sessionId,
         e.regionId,
-        regionLabel(e.regionId),
-        e.emotionIds.map((id) => emotionById.get(id)?.label ?? id).join('; '),
-        e.sensations.join('; '),
+        tr.region(e.regionId),
+        e.emotionIds.map((id) => tr.emotion(emotionById.get(id))).join('; '),
+        e.sensations.map((x) => tr.sensation(x)).join('; '),
         e.intensity,
         e.note,
         s?.overallMood,
         s?.reflection,
+        ...CONTEXT_GROUPS.map((g) => ctx(s, g)),
       ]
         .map(csvCell)
         .join(',');

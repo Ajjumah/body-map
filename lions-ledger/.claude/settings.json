@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ledger:*)",
+      "Bash(.venv/bin/ledger:*)",
+      "Bash(python -m ledger:*)",
+      "Read(./**)",
+      "Write(./data/work/**)",
+      "Edit(./data/work/**)",
+      "Glob"
+    ],
+    "deny": [
+      "Read(./credentials.json)",
+      "Read(./token.json)",
+      "WebFetch",
+      "WebSearch"
+    ]
+  }
+}

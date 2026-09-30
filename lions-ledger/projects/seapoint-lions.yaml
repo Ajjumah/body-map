@@ -1,0 +1,66 @@
+# Project registry for this source.
+# status: active   -> normal articles
+#         proposed -> found automatically; shows a "New on the desk" badge until you decide
+#         ignore   -> left out of editions (emails are still stored)
+# aliases: other names the emails use for the same project.
+projects:
+- id: carepacks
+  name: Carepacks
+  aliases: []
+  status: proposed
+- id: sleeping-bags
+  name: Sleeping Bags
+  aliases: []
+  status: proposed
+- id: bingo-at-sea-point-place
+  name: Bingo at Sea Point Place
+  aliases: []
+  status: proposed
+- id: lions-quiz
+  name: Lions Quiz
+  aliases: []
+  status: proposed
+- id: christmas-cakes
+  name: Christmas Cakes
+  aliases: []
+  status: proposed
+- id: eye-testing
+  name: Eye Testing
+  aliases: []
+  status: proposed
+- id: brightsight-frame-collection
+  name: BrightSight Frame Collection
+  aliases: []
+  status: proposed
+- id: kids-can-cancer-shoe-drive
+  name: Kids Can Cancer Shoe Drive
+  aliases: []
+  status: proposed
+- id: santa-shoeboxes
+  name: Santa Shoeboxes
+  aliases: []
+  status: proposed
+- id: tree-planting
+  name: Tree Planting
+  aliases: []
+  status: proposed
+- id: haven-lunches
+  name: Haven Lunches
+  aliases: []
+  status: proposed
+- id: cupcakes-of-hope
+  name: Cupcakes of Hope
+  aliases: []
+  status: proposed
+- id: fidget-mats
+  name: Fidget Mats
+  aliases: []
+  status: proposed
+- id: choc-carepacks
+  name: CHOC Carepacks
+  aliases: []
+  status: proposed
+- id: somerset-hospital-donations
+  name: Somerset Hospital Donations
+  aliases: []
+  status: proposed

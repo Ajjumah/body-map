@@ -1,0 +1,28 @@
+publication:
+  title: "The Lions Ledger"
+  tagline: "News from Sea Point Lions Club"
+  reader_name: "Azeem"
+
+sources:
+  - id: seapoint-lions
+    name: "Sea Point Lions Club"
+    # Set from `ledger discover` on 30 Sep 2026. The club mails from its Gmail account; minutes are
+    # also shared as Google Drive items and meetings as calendar invites. A bare "Lions" search
+    # also catches FNB payment alerts ("Lions Mane") and Lions International marketing, so it is not used.
+    gmail_query: 'from:lions.club.sea.point@gmail.com OR (from:drive-shares-dm-noreply@google.com "Sea Point Lions") OR (from:calendar-notification@google.com "Sea Point Lions")'
+    lookback_days_first_run: 60
+    enabled: true
+    # Minutes are often shared as Google Docs/Drive links rather than attachments. Turning this on
+    # reads the linked documents too, but adds the drive.readonly scope (re-run `ledger auth`).
+    follow_drive_links: false
+    exclude_senders: []
+
+edition:
+  cadence: weekly            # weekly | on-demand
+  period_days: 7
+  first_edition_days: 30     # the very first edition covers this many days so it starts with context
+  output_dir: "editions/"
+  email_to_self: false       # optional: send the edition to my inbox (adds the gmail.send scope)
+
+# Where "Sources" links point. u/0 is the first signed-in Google account in your browser.
+gmail_link_template: "https://mail.google.com/mail/u/0/#inbox/{id}"

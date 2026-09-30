@@ -36,7 +36,8 @@ nobody else can use it.
 
 1. Go to <https://console.cloud.google.com/> and sign in with the Gmail account that receives the Lions mail.
 2. Top bar → project picker → **New project**. Name it `Lions Ledger` → **Create**, then select it.
-3. Menu → **APIs & Services → Library**. Search **Gmail API** → **Enable**.
+3. Menu → **APIs & Services → Library**. Search **Gmail API** → **Enable**. Then search **Google Drive API** →
+   **Enable** (the club shares minutes as Drive links; see `follow_drive_links` below).
 4. Menu → **APIs & Services → OAuth consent screen** (may be called **Google Auth Platform**):
    - User type **External** → Create. App name `Lions Ledger`, your email as support and developer contact → Save.
    - **Audience / Test users** → **Add users** → add your own Gmail address → Save.
@@ -49,7 +50,8 @@ nobody else can use it.
    ledger auth
    ```
    A browser opens. Choose your account. Google warns "Google hasn't verified this app": click **Continue**
-   (it is your own app). Allow **"View your email messages and settings"** (read-only). You'll see
+   (it is your own app). Allow **"View your email messages and settings"** and **"See and download all your
+   Google Drive files"** (both read-only). You'll see
    `Signed in as …`, and `token.json` is saved.
 
 Notes:
@@ -115,16 +117,16 @@ Add a `sources:` entry to `config.yaml` with its own `id`, `name` and `gmail_que
 
 ## 7. Options in `config.yaml`
 
-- `follow_drive_links` (per source, default **off**): the club often shares minutes as Google Drive links rather
-  than attachments. Turning this on makes `fetch` read those linked documents too, which adds the
-  `drive.readonly` scope; run `ledger auth` again afterwards (also enable **Google Drive API** in step 3).
+- `follow_drive_links` (per source, **on** for Sea Point Lions): the club often shares minutes as Google Drive links
+  rather than attachments, so `fetch` reads the linked documents too (up to 3 per email). This needs the
+  read-only `drive.readonly` scope. Set it to `false` and run `ledger auth` again to go back to Gmail-only access.
 - `exclude_senders`: addresses to store but never classify.
 - `email_to_self` (default off): email each edition to yourself; adds the `gmail.send` scope (run `ledger auth` again).
 - `gmail_link_template`: change `u/0` if the Lions Gmail is not your first signed-in Google account.
 
 ## Privacy
 
-Read-only Gmail access. Email text is read only by Claude Code on your machine. `data/` (database, logs, work
+Read-only Gmail access (plus read-only Drive access for linked minutes). Email text is read only by Claude Code on your machine. `data/` (database, logs, work
 files), `editions/` and the credentials are git-ignored and never leave your computer.
 
 ## Development

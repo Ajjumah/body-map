@@ -431,3 +431,24 @@ def test_fetch_with_fake_gmail(home, monkeypatch):
     assert "Resolved to fund 30 shoeboxes" in pending["emails"][0]["attachment_text"]
     r = runner.invoke(cli.app, ["fetch"])  # second run: nothing new
     assert "3 matched, 0 new" in r.output
+
+
+def test_reshare_with_readable_drive_doc_is_not_dropped_as_duplicate(home):
+    """The club shared the Sep GBM minutes twice; only the second link opened. Keep that one."""
+    from typer.testing import CliRunner
+
+    from ledger import cli
+
+    body = "I've shared an item with you:\n\nGBM Minutes\nhttps://drive.google.com/file/d/{}/view\n\nMinutes attached."
+    msgs = [
+        {"id": "s1", "date": "2026-09-22T19:48:00Z", "from": "Club <drive@x.org>", "subject": "Item shared: GBM Minutes",
+         "text_body": body.format("A" * 25)},
+        {"id": "s2", "date": "2026-09-22T20:49:00Z", "from": "Club <drive@x.org>", "subject": "Item shared: GBM Minutes",
+         "text_body": body.format("B" * 25), "attachments": [{"filename": "GBM Minutes", "text": "Rent is R3,000 behind."}]},
+        {"id": "s3", "date": "2026-09-22T21:00:00Z", "from": "Club <drive@x.org>", "subject": "Item shared: GBM Minutes",
+         "text_body": body.format("C" * 25), "attachments": [{"filename": "GBM Minutes", "text": "Rent is R3,000 behind."}]},
+    ]
+    f = home / "shares.json"
+    f.write_text(json.dumps(msgs))
+    r = CliRunner().invoke(cli.app, ["import-json", str(f)])
+    assert "'stored': 2" in r.output and "'skipped': 1" in r.output  # s3 is a true duplicate of s2

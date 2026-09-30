@@ -14,7 +14,7 @@ sources:
     enabled: true
     # Minutes are often shared as Google Docs/Drive links rather than attachments. Turning this on
     # reads the linked documents too, but adds the drive.readonly scope (re-run `ledger auth`).
-    follow_drive_links: false
+    follow_drive_links: true
     exclude_senders: []
 
 edition:

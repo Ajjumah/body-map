@@ -53,6 +53,17 @@ English, Afrikaans, isiZulu, isiXhosa, Spanish, French and Portuguese, chosen in
 
 Default feelings are colour-coded: hard feelings (anxious, low, hurt/angry) in shades of red and coral, good feelings in greens, and tired or unsure in soft neutrals. Every colour keeps dark text at 4.5:1 or better (tested), and each feeling always shows its emoji and name, so colour is never the only signal.
 
+## Calm corner
+
+The Calm tab is a library of 14 short breathing and regulation exercises, available any time:
+
+- **Breathing:** balloon (4-7-8), square (4-4-4-4), ocean waves (5 in, 5 out), sigh it out (double inhale, long exhale), humming bee, five-finger breathing
+- **Moving and tapping:** butterfly hug (alternating taps), squeeze and let go (short progressive muscle relaxation), shake it out
+- **Senses and imagination:** 5-4-3-2-1 treasure hunt, my cosy place
+- **Rest and comfort:** kind hand, a cosy little rest, keep the good feeling
+
+They're defined in `src/data/exercises.ts` and played by `src/components/ExercisePlayer.tsx`. After a check-in, the summary suggests one matched to the strongest feeling (for example, movement for big angry feelings, comfort for low ones), with "Try another" and a link to the full library. Animations stop under `prefers-reduced-motion`; the text and countdowns still guide you.
+
 ## Check-in context
 
 After finishing a check-in, optional "What were you doing? / Who were you with? / Where were you?" tags can be added, including your own. They are saved on the session, shown in Memories, and included in the CSV export.

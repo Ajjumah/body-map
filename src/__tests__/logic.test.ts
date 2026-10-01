@@ -224,3 +224,33 @@ describe('feeling colours', () => {
     for (const e of DEFAULT_EMOTIONS) expect((lum(e.color) + 0.05) / (ink + 0.05), e.label).toBeGreaterThanOrEqual(4.5);
   });
 });
+
+describe('calm exercises', async () => {
+  const { EXERCISES, CATEGORIES, exerciseById, suggestExercises } = await import('../data/exercises');
+  const emo = new Map(DEFAULT_EMOTIONS.map((e) => [e.id, e]));
+  it('has unique ids, something in every category, and sane timings', () => {
+    expect(new Set(EXERCISES.map((e) => e.id)).size).toBe(EXERCISES.length);
+    for (const c of CATEGORIES) expect(EXERCISES.some((e) => e.cat === c)).toBe(true);
+    for (const e of EXERCISES) {
+      if (e.kind === 'pace') for (const p of e.phases) expect(p.secs).toBeGreaterThan(0);
+      if (e.kind === 'steps') expect(e.steps.length).toBeGreaterThan(0);
+    }
+  });
+  it('suggests real exercises that fit the strongest feeling', () => {
+    const cases: [string, number, string][] = [
+      ['default.panicky', 9, 'sigh'],
+      ['default.angry', 8, 'shake'],
+      ['default.worried', 4, 'square'],
+      ['default.sad', 6, 'kind'],
+      ['default.numb', 5, 'senses'],
+      ['default.exhausted', 5, 'rest'],
+      ['default.calm', 5, 'savour'],
+    ];
+    for (const [id, intensity, first] of cases) {
+      const ids = suggestExercises([entry({ emotionIds: [id], intensity })], emo);
+      expect(ids[0], id).toBe(first);
+      for (const x of ids) expect(exerciseById(x), x).toBeDefined();
+    }
+    expect(suggestExercises([], emo)).toEqual([]);
+  });
+});

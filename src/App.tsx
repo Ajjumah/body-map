@@ -8,15 +8,17 @@ import { useRoute } from './lib/route';
 import { useWorld } from './lib/useWorld';
 import { WORLDS, type World } from './lib/world';
 import BodyMapScreen from './screens/BodyMapScreen';
+import CalmScreen from './screens/CalmScreen';
 import HelpScreen from './screens/HelpScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import { StoreProvider, useStore } from './store';
 
-export type Screen = 'map' | 'history' | 'settings' | 'help';
+export type Screen = 'map' | 'history' | 'calm' | 'settings' | 'help';
 const SCREENS: { id: Screen; label: Key; icon: IconName }[] = [
   { id: 'map', label: 'nav.body', icon: 'body' },
   { id: 'history', label: 'nav.memories', icon: 'memories' },
+  { id: 'calm', label: 'nav.calm', icon: 'wind' },
   { id: 'settings', label: 'nav.settings', icon: 'settings' },
   { id: 'help', label: 'nav.help', icon: 'help' },
 ];
@@ -68,6 +70,8 @@ function Shell() {
           <BodyMapScreen />
         ) : screen === 'history' ? (
           <HistoryScreen route={route} />
+        ) : screen === 'calm' ? (
+          <CalmScreen route={route} />
         ) : screen === 'settings' ? (
           <SettingsScreen />
         ) : (
@@ -75,15 +79,15 @@ function Shell() {
         )}
       </main>
       <nav aria-label={t('nav.main')} className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-        <ul className="card on-surface mx-auto flex max-w-lg gap-1.5 p-1.5">
+        <ul className="card on-surface mx-auto flex max-w-xl gap-1 p-1.5">
           {SCREENS.map((s) => {
             const on = screen === s.id;
             return (
-              <li key={s.id} className="flex-1">
+              <li key={s.id} className="min-w-0 flex-1">
                 <a
                   href={`#/${s.id}`}
                   aria-current={on ? 'page' : undefined}
-                  className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-2xl border-3 text-xs font-bold text-ink ${on ? 'border-outline bg-accent-2' : 'border-transparent'}`}
+                  className={`flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-2xl border-3 px-0.5 text-center text-[11px] leading-tight font-bold break-words hyphens-auto text-ink ${on ? 'border-outline bg-accent-2' : 'border-transparent'}`}
                 >
                   <Icon name={s.icon} />
                   {t(s.label)}

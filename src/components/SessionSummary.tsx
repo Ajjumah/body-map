@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { emptyTags, type ContextTags } from '../data/context';
+import { suggestExercises } from '../data/exercises';
 import { useT } from '../i18n';
 import { useWorld } from '../lib/useWorld';
 import { useStore } from '../store';
@@ -8,7 +9,7 @@ import ContextPicker from './ContextPicker';
 import EntryList from './EntryList';
 import Icon from './Icon';
 import StarScale, { ScaleValue } from './StarScale';
-import Grounding, { pickGrounding } from './Grounding';
+import Grounding from './Grounding';
 import MiniBody from './MiniBody';
 
 /** Stored markers inside Session.reflection. Kept in English so saved data is language-independent. */
@@ -45,7 +46,7 @@ export default function SessionSummary({ sessionId, onDone }: { sessionId: strin
   const [context, setContext] = useState<ContextTags>(session?.context ?? emptyTags());
   const tr = useT();
   const { t } = tr;
-  const grounding = pickGrounding(list, emotionById);
+  const suggestions = suggestExercises(list, emotionById);
   const world = useWorld();
 
   if (!session) return null;
@@ -68,7 +69,7 @@ export default function SessionSummary({ sessionId, onDone }: { sessionId: strin
         </div>
       </div>
 
-      {showGrounding && grounding && <Grounding kind={grounding} onDismiss={() => setShowGrounding(false)} />}
+      {showGrounding && suggestions.length > 0 && <Grounding options={suggestions} onDismiss={() => setShowGrounding(false)} />}
 
       <div className="card p-4">
         <h3 className="mb-2 text-center text-xl text-ink">{t('summary.bodyToday')}</h3>

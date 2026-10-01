@@ -84,7 +84,7 @@ If there is no `assets/logo.png`, the header shows only the club name, and the i
 ### Settings (gear icon)
 
 - **Highest number:** any number from 10 to 200, with quick buttons for 75, 90 and 100. Once a game has started, changing it starts a new game (it asks first).
-- **BINGO letters:** split the numbers into B-I-N-G-O columns. This works when the highest number divides by 5 (75 gives B 1–15 … O 61–75; 100 gives 20 per letter). For other ranges, such as 42, letters switch off automatically.
+- **BINGO letters:** off by default. Turn on to split the numbers into B-I-N-G-O columns. This works when the highest number divides by 5 (75 gives B 1–15 … O 61–75; 100 gives 20 per letter). For other ranges, such as 42, letters switch off automatically.
 - **Voice:** announce each call, and choose the voice. A South African or UK English voice is picked automatically when the device has one. The voice settings are hidden if the device has no voices.
 - **Draw animation:** a short flicker before the number lands. It is switched off automatically if the device is set to reduce motion.
 - **Reset everything:** clears the game and settings on this device.

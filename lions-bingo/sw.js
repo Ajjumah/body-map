@@ -1,6 +1,6 @@
 /* Offline support: cache the app shell on install, serve it cache-first.
    Bump VERSION whenever you change any app file so devices pick up the update. */
-var VERSION = 'splc-bingo-v1';
+var VERSION = 'splc-bingo-v2';
 
 var CORE = [
   './',

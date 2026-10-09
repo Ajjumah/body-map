@@ -30,6 +30,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,webmanifest,woff2}'],
+        // tickbox/ is a separate app with its own service worker.
+        navigateFallbackDenylist: [/\/tickbox\//],
       },
     }),
   ],

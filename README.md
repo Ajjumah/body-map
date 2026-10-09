@@ -12,6 +12,10 @@ npm run preview    # serve dist/ at http://localhost:4173 (use this to test offl
 npm test           # unit tests (logic, PIN hashing, CSV, IndexedDB backup round trip)
 ```
 
+## Tickbox Tracker
+
+`tickbox/` holds a separate app: a general-purpose tickbox grid with per-cell due dates that keeps the most urgent row at the top. It is plain HTML, CSS and JavaScript with no build step. `npm run build` copies it to `dist/tickbox/`, so it is published at `/<repo>/tickbox/`, and `npm test` runs its unit tests too. See [tickbox/README.md](tickbox/README.md).
+
 ## Deploy
 
 Every push to `main` builds and deploys to GitHub Pages through `.github/workflows/deploy.yml`, after the tests pass. The workflow sets `BASE_PATH=/<repo>/` so assets, the manifest and the service worker all resolve under the Pages subpath. To reproduce that build locally:
